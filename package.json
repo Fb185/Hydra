@@ -1,5 +1,23 @@
 {
   "dependencies": {
     "crypto-js": "^4.1.1"
-  }
+  },
+  "name": "medichain",
+  "description": "A blockchain-based platform designed to securely store and manage electronic medical records. ",
+  "version": "1.0.0",
+  "main": "main.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Fb185/MediChain.git"
+  },
+  "author": "",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/Fb185/MediChain/issues"
+  },
+  "homepage": "https://github.com/Fb185/MediChain#readme"
 }
