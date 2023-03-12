@@ -1,0 +1,32 @@
+in this project we attempt to develop a blockchain protocol mean to run on web3.0
+used in the Medical/Health sector.
+the way that blockchain technology and web3.0 work have already been established
+so in this chapter we will be focusing on how the technology is applicable on 
+the mentioned areas.
+Health records and prescriptions are very sensetive pieces of information 
+and must be handled with extreme care so as to not get into the wrong hands.
+It is also worth mentioning that this project is also an attempt to give back
+some of the freedom of choice to the user, by allowing them to decide for themselves
+who and what they want to share of their personal medical information.
+The way that this system will work is through a 3 part process.
+part 1 the doctor will assign a prescription to a patient. lets call them doc1 and
+pat1 for example sake;
+the doctor will use pat1's public encryption key to cypher the prescription and
+upload it into the blockchain.
+part 2 the patient will leave the doctor's office and go to the pharmacy where he will 
+be able to access the blockaid's blockchain.
+part 3 using the private key the user will decrypt their prescription and get the appropriate 
+medication.
+
+
+currently the main  issue is to decide how the network architechture will be.
+we have established that it doesnt make any sense whatsoever to use a private blockchain 
+for the effects of applying the project on web3.0.
+That said its important to define who are the agents responsible for mining and validating
+the blocks. Without this important question unanswered the project would have no relevancy.
+It would be unwise to assign the ownership of the majority of the network to any given organiztion
+or government. The alternative is to have the blockchain be distributed by some user that
+would have more to gain if the integrity of the blockchain is maintained.
+The essence of our dilema currently is to establish what is reward for supporting this blockchain.
+Its important to note that allowing certain users more functionalities of the blockchain
+or introducing a cryptocoin seems like an unethical and useless answer.
