@@ -1,3 +1,5 @@
+github.com/fb185/MediChain v0.0.0-20230321144856-534b01e0f0f3 h1:q08g1bnUcn63DJ2JUUeDEb2DK0otla/B7xa7UJP+IeA=
+github.com/fb185/MediChain v0.0.0-20230321144856-534b01e0f0f3/go.mod h1:EYPsV/d1V2ip55YJOe2ErwThNvOdmiaAYq7Mzi7oJAA=
 golang.org/x/text v0.0.0-20170915032832-14c0d48ead0c h1:qgOY6WgZOaTkIIMiVjBQcw93ERBE4m30iBm00nkL0i8=
 golang.org/x/text v0.0.0-20170915032832-14c0d48ead0c/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 rsc.io/quote v1.5.2 h1:w5fcysjrx7yqtD/aO+QwRjYZOKnaM9Uh2b40tElTs3Y=
