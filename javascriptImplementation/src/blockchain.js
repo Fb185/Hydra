@@ -53,7 +53,9 @@ class Block {
     mineBlock(difficulty) {
         while (this.hash.substring(0, difficulty) !== Array(difficulty + 1).join("0")) {
             this.nonce++;
+            console.log("nonce : " , this.nonce)
             this.hash = this.calaculateHash()
+            console.log("hash: " , this.hash)
         }
         console.log("block mined: " + this.hash)
     }
@@ -71,7 +73,7 @@ class Block {
 class BlockChain {
     constructor() {
         this.chain = [this.createGenesisBlock()]
-        this.difficulty = 3
+        this.difficulty = 4
         this.pendingTransactions = []
         this.miningReward = 100
     }
