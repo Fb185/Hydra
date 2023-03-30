@@ -6,6 +6,7 @@ class Node:
         self.host = host
         self.port = port
         self.connections = []
+        self.task_queue = []
         self.task_acceptors = {}
         self.lock = threading.Lock()
         self.shutdown = False 
@@ -14,10 +15,29 @@ class Node:
         self.close()
 
     def accept_task(self, task_id, addr):
-        with self.lock:
-            if task_id not in self.task_acceptors:
+    #     with self.lock:
+    #         if task_id not in self.task_acceptors:
+    #             self.task_acceptors[task_id] = []
+    #         self.task_acceptors[task_id].append(addr)
+        for task in self.task_queue:
+            if (task == []):
+                print("No tasks to accept")
                 self.task_acceptors[task_id] = []
-            self.task_acceptors[task_id].append(addr)
+            else:
+                self.task_acceptors[task_id].append(addr)
+                
+    def show_tasks(self):
+        return self.task_queue and self.task_acceptors and self.task_acceptors
+            
+
+    def connect_to_node(self, host, port):
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.connect((host, port))
+        self.connections.append(client)
+
+        thread = threading.Thread(target=self.handle_client, args=(client, (host, port)))
+        thread.start()
+        print(f"Connection successfully {host}:{port}")
 
     def listen_for_connections(self):
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -59,22 +79,13 @@ class Node:
             client.close()
 
 
-    def connect_to_node(self, host, port):
-        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client.connect((host, port))
-        self.connections.append(client)
-
-        thread = threading.Thread(target=self.handle_client, args=(client, (host, port)))
-        thread.start()
-        print(f"Connection successfully to {host}:{port}")
-
     def broadcast(self, msg):
         for connection in self.connections:
-            try:
-                connection.send(msg.encode('utf-8'))
-            except:
-                connection.close()
-                self.connections.remove(connection)
+            # try:
+            connection.send(msg.encode('utf-8'))
+            # except:
+            #     connection.close()
+            #     self.connections.remove(connection)
 
     def send_message(self, host, port, msg):
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -104,6 +115,9 @@ class Node:
             elif command.startswith("yes"):
                 _, task_id = command.split()
                 self.broadcast(f"YES:{task_id}")
+                # self.accept_task(task_id, self.host, self.port))
+            elif command.startswith("show"):
+                self.show_tasks()
             else:
                 self.broadcast(command)
 
