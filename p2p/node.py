@@ -35,24 +35,6 @@ class Node:
             except Exception as e:
                 pass
 
-    # def listen(self):
-    #     self.server_socket.listen()
-    #     while self.running:
-    #         try:
-    #             self.server_socket.settimeout(1)
-    #             client_socket, addr = self.server_socket.accept()
-    #             header = client_socket.recv(2).decode('utf-8')
-    #             data = client_socket.recv(1024).decode('utf-8')
-
-    #             if header == 'P:':
-    #                 if not data:
-    #                     continue
-    #                 self.peers.append(int(data))
-    #                 threading.Thread(target=self.handle_peer, args=(client_socket,)).start()
-    #             elif header == 'M:':
-    #                 print(f'\n{data}')
-    #         except socket.timeout:
-    #             pass
     def listen(self):
         self.server_socket.listen()
         self.server_socket.settimeout(1)  # Set a timeout of 1 second
