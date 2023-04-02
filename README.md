@@ -1,6 +1,6 @@
-# Documentation: Node-Based Chat Application
+# Documentation: Node-Based Application
 
-This script implements a simple node-based chat application using a peer-to-peer network architecture. Each node in the network communicates with its peers using sockets and threads to send and receive messages. The network is decentralized, meaning there is no central server to manage connections or relay messages.
+This script implements a simple node-based  application using a peer-to-peer network architecture. Each node in the network communicates with its peers using sockets and threads to send and receive messages. The network is decentralized, meaning there is no central server to manage connections or relay messages.
 
 ## Network Architecture
 
