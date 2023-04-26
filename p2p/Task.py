@@ -5,7 +5,6 @@ class Task():
         self.author = author
         self.id = int(id)
         self.complete = False
-        self.full = False
 
     @classmethod
     def from_string(cls, task_str):
@@ -15,16 +14,14 @@ class Task():
         author = int(task_data[2])
         accepted_nodes = [int(node) if node != "None" else None for node in task_data[3].split(",")]
         complete = task_data[4] == "True"
-        full = task_data[5] == "True"
 
         task = cls(description, author, task_id)
         task.accepted_nodes = accepted_nodes
         task.complete = complete
-        task.full = full
 
         return task
     def __str__(self):
-        return f"Task ID: {self.id}\nDescription: {self.description}\nAuthor: {self.author}\nAccepted Nodes: {self.accepted_nodes}\nComplete: {self.complete}\nFull: {self.full}\n"
+        return f"Task ID: {self.id}\nDescription: {self.description}\nAuthor: {self.author}\nAccepted Nodes: {self.accepted_nodes}\nComplete: {self.complete}\n"
 
     def get_id(self):
         return int(self.id)
