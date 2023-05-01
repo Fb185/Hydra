@@ -15,6 +15,9 @@ class Block:
         sha.update(hash_str)
         return sha.hexdigest()
 
+    def __str__(self):
+        return "Block Index: " + str(self.index) + "\nTimestamp: " + str(self.timestamp) + "\nData: " + str(self.data) + "\nHash: " + str(self.hash) + "\nPrevious Hash: " + str(self.previous_hash)
+
 class Blockchain:
     def __init__(self):
         self.chain = [self.create_genesis_block()]
@@ -56,6 +59,7 @@ class Blockchain:
         delegate_name = self.get_delegate_with_most_votes()
         if delegate_name in self.delegates:
             self.add_block(new_block)
+            print("New block created:\n" + str(new_block))
             return True
         else:
             return False
@@ -69,4 +73,4 @@ blockchain.delegate_voting_power("Delegate3", 30)
 blockchain.generate_new_block("Block 1 data")
 
 # validate blockchain
-print(blockchain.validate_blockchain())
+print("Is blockchain valid? " + str(blockchain.validate_blockchain()))
