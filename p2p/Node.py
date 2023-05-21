@@ -76,7 +76,7 @@ class Node():
                     self.accept_task(data)
 
                 elif header == 'S:':
-                    self.syncronize(data)
+                    self.syncronize_tasks(data)
 
             except socket.timeout:
                 continue  # If the timeout occurs, just continue the loop
@@ -112,17 +112,21 @@ class Node():
 
     def task_exists(self, task_id):
         for task in self.available_tasks:
-            print(task)
+            if task.id == int(task_id):
+                return True
+
+        for task in self.accepted_tasks:
             if task.id == int(task_id):
                 return True
         return False
+
 
 
     def make_task(self, description, task_id):
         print("checking dupes")
         # print(task_id)
         if self.task_exists(task_id):
-            print("Duplicate ID")
+            print("Duplicate ID\n Unable to create task.")
             return None
 
         new_task = Task(description, self.port, task_id)
@@ -143,8 +147,6 @@ class Node():
         print(self.available_tasks)
         return None
 
-
-
     def accept_task(self, task_id):
         if self.available_tasks[int(task_id) -1].accepted_nodes[1] != None:
             print("Task full")
@@ -160,7 +162,7 @@ class Node():
                     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     s.connect(('127.0.0.1', peer))
                     self.available_tasks[int(task_id)-1]
-                    s.send(f'S:{self.port}:{task_id}'.encode('utf-8')) # send syncronize
+                    s.send(f'S:{self.port}:{task_id}'.encode('utf-8')) # send syncronize_tasks
                     self.send_message(f'{self.port} has accepted task {task_id}')
                 except Exception as e:
                     pass
@@ -173,7 +175,7 @@ class Node():
             self.accepted_tasks.append(self.available_tasks[int(task_id)-1])
             self.available_tasks.pop(int(task_id)-1)
 
-    def syncronize(self, data):
+    def syncronize_tasks(self, data):
         print("\nSyncronizing...")
         data = data.split(":")
         port = data[0]
@@ -207,51 +209,3 @@ class Node():
             print(str(task))
 
 
-def main():
-    port = 8000
-    while True:
-        try:
-            node = Node(port)
-            break
-        except Exception as e:
-            port += 1
-
-    print(f"Node started on port {port}")
-    node.connect_to_peers()
-    node.send_message(f"\nNode {port} has connected to the network")
-
-    threading.Thread(target=node.listen).start()
-
-    while True:
-        command = input("Enter command (send/exit/make/list(available)(my)/accept): ")
-        if command == "send":
-            msg = input("Enter message: ")
-            node.send_message(f"\nNode {port}: {msg}")
-
-        elif command == "make":
-            descriprion = input("Enter a description ")
-            task_id = input("Enter a task ID ")
-            node.make_task(descriprion, task_id)
-
-        elif command == "list":
-            node.list_available_tasks()
-
-        elif command == "lista":
-            node.list_accepted_tasks()
-
-        elif command == "listm":
-            node.list_my_tasks()
-
-        elif command == "accept":
-            task_id = input("Enter a task ID ")
-            node.accept_task(task_id)
-
-        elif command == "exit":
-            node.send_message(f"Node {port} has disconnected from the network")
-            node.closed = True
-            node.server_socket.close()
-            sys.exit()
-
-
-if __name__ == "__main__":
-    main()
