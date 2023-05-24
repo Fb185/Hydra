@@ -51,8 +51,7 @@ def main():
 
         elif command == "make":
             descriprion = input("Enter a description ")
-            task_id = input("Enter a task ID ")
-            node.make_task(descriprion, task_id)
+            node.make_task(descriprion)
 
         elif command == "list":
             node.list_available_tasks()
