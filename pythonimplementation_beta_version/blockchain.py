@@ -1,5 +1,6 @@
 import hashlib
 import datetime as date
+from Node import Node
 
 class Block:
     def __init__(self, index, timestamp, data, previous_hash):
@@ -21,8 +22,8 @@ class Block:
 class Blockchain:
     def __init__(self):
         self.chain = [self.create_genesis_block()]
-        self.delegates = ["Delegate1", "Delegate2", "Delegate3"]
-        self.votes = {}
+        self.nodes = Node.ports
+        self.stake = {}
 
     def create_genesis_block(self):
         return Block(0, date.datetime.now(), "Genesis Block", "0")
@@ -35,11 +36,11 @@ class Blockchain:
         new_block.hash = new_block.calculate_hash()
         self.chain.append(new_block)
 
-    def delegate_voting_power(self, delegate_name, voting_power):
-        self.votes[delegate_name] = voting_power
+    def validator(self, node_id, validator_prob):
+        self.stake[node_id] = validator_prob
 
-    def get_delegate_with_most_votes(self):
-        return max(self.votes, key=self.votes.get)
+    def elected(self):
+        return max(self.stake, key=self.stake.get)
 
     def validate_blockchain(self):
         for i in range(1, len(self.chain)):
@@ -56,8 +57,8 @@ class Blockchain:
         timestamp = date.datetime.now()
         previous_hash = self.get_latest_block().hash
         new_block = Block(index, timestamp, data, previous_hash)
-        delegate_name = self.get_delegate_with_most_votes()
-        if delegate_name in self.delegates:
+        node_id = self.elected()
+        if node_id in self.nodes:
             self.add_block(new_block)
             print("New block created:\n" + str(new_block))
             return True
@@ -65,9 +66,10 @@ class Blockchain:
             return False
 
 blockchain = Blockchain()
-blockchain.delegate_voting_power("Delegate1", 10)
-blockchain.delegate_voting_power("Delegate2", 20)
-blockchain.delegate_voting_power("Delegate3", 30)
+
+blockchain.validator(1, 10)
+blockchain.validator(2, 20)
+blockchain.validator(3, 30)
 
 # generate new block with data
 blockchain.generate_new_block("Block 1 data")
