@@ -3,6 +3,7 @@ from tkinter import ttk
 import tkinter as tk
 from Node import Node
 
+
 def run_gui(node):
     def on_task_select(event):
         selected_task = task_listbox.get(task_listbox.curselection())
