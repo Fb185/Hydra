@@ -1,6 +1,6 @@
 from hashlib import *
 import datetime as date
-from p2p.Node import *
+#from p2p.Node import *
 from Block import Block
 
 class Blockchain:
@@ -18,7 +18,6 @@ class Blockchain:
     def add_block(self, new_block):
         self.chain.append(new_block)
         
-
     def elected(self):
         return max(self.stake, key=self.stake.get)
 
@@ -47,43 +46,24 @@ class Blockchain:
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-"""
-
 if __name__ == "__main__":
         
     blockchain = Blockchain()
 
-    # Sample stake values and node IDs
-    stake_values = {
-        "node1": 100,
-        "node2": 150,
-        "node3": 200,
-        "node4": 125
-    }
 
-    # Add nodes and their corresponding stake values to the blockchain
-    for node_id, stake in stake_values.items():
-        blockchain.nodes.append(node_id)
-        blockchain.stake[node_id] = stake
+# Testing
+if __name__ == "__main__":
+    # Create a blockchain instance
+    blockchain = Blockchain()
 
-    # generate new block with data
-    blockchain.generate_new_block("Block 1 data")
+    # Set node ID and stake
+    node_id = "Node1"
+    stake = 100
 
-    # validate blockchain
-    print("Is blockchain valid? " + str(blockchain.validate_blockchain()))
-    
-    # Print the __str__ representation of the Block
-    new_block = Block(1, date.datetime.now(), "Block 1 data", blockchain.get_latest_block().hash)
-    print(str(new_block))
-    """
+    # Add node to the blockchain
+    blockchain.nodes.append(node_id)
+    blockchain.stake[node_id] = stake
+
+    # Generate a new block
+    data = "Block data"
+    blockchain.generate_new_block(data) 

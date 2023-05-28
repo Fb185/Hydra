@@ -18,10 +18,8 @@ class Merkletree:
         # Recursive call to build left and right subtrees
         left_subtree = self.build_merkle_tree(data[:len(data)//2])
         right_subtree = self.build_merkle_tree(data[len(data)//2:])
-
         # Combine left and right subtrees hashes
         combined_hashes = left_subtree + right_subtree
-
         # Calculate parent hashes by hashing the concatenation of left and right hashes
         merkle_root = []
         for i in range(0, len(combined_hashes), 2):
@@ -31,8 +29,6 @@ class Merkletree:
             merkle_root.append(parent_hash)
 
         return merkle_root
-        
-
 
 
 
