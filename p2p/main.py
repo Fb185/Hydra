@@ -3,7 +3,6 @@ from tkinter import ttk
 import tkinter as tk
 from Node import Node
 
-
 def run_gui(node):
     def on_task_select(event):
         selected_task = task_listbox.get(task_listbox.curselection())
@@ -32,21 +31,23 @@ def run_gui(node):
     root.mainloop()
 
 def main():
-    port = 8000
-    while True:
-        try:
-            node = Node(port)
-            break
-        except Exception as e:
-            port += 1
+    if len(sys.argv) < 2:
+        print("Usage: python main.py <port>")
+        sys.exit(1)
 
+    port = int(sys.argv[1])
+    node = Node(port)
+    id = Node.node_id + 1
+    print(node)
+    print("Node-ID - ", id)
     print(f"Node started on port {port}")
     node.connect_to_peers()
     node.send_message(f"\nNode {port} has connected to the network")
+    node.send_message(f"\nNode id - ", )
 
     threading.Thread(target=node.listen).start()
     while True:
-        command = input("Enter command (send/exit/make/list(available)(my)/accept)/gui: ")
+        command = input("Enter command (send/exit/make/list/lista/listm(available)(my)/accept)/gui: ")
 
         if command == "send":
             msg = input("Enter message: ")

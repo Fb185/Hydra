@@ -117,14 +117,19 @@ class Node():
                 pass
 
     def task_exists(self, task_id):
+        answer = True
         for task in self.available_tasks:
             if task.id == int(task_id):
-                return True
+                answer = True
+            else:
+                answer = False
 
         for task in self.accepted_tasks:
             if task.id == int(task_id):
-                return True
-        return False
+                answer = True
+            else:
+                answer = True
+        return answer
 
 
 

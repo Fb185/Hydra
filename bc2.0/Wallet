@@ -1,0 +1,46 @@
+class wallet:
+    def __init__(self, balance, stake):
+        self.balance = float(balance)
+        self.stake = float(stake)
+    
+    def get_balance(self):
+        return self.balance
+    
+    def get_stake(self):
+        return self.stake
+    
+    def add_tokens(self, amount):
+        self.balance += amount
+
+    def remove_tokens(self, amount):
+        if self.balance >= amount:
+            self.balance -= amount
+        else:
+            print("Insufficient tokens.")
+
+    def add_stake(self, amount):
+        self.stake += amount
+        self.balance -= amount
+
+    def remove_stake(self, amount):
+        if self.stake >= amount:
+            self.stake -= amount
+            self.balance += amount
+        else:
+            print("Insufficient staked tokens.")
+
+    def transfer_tokens(self, amount, recipient):
+        if self.tokens >= amount:
+            self.tokens -= amount
+            recipient.add_tokens(amount)
+        else:
+            print("Insufficient tokens.")
+
+
+""" 
+wallet = wallet(balance=100, stake=50)
+balance = wallet.get_balance()
+stake = wallet.get_stake()
+print("Balance:", balance)
+print("Stake:", stake)
+"""
