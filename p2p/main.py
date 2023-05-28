@@ -30,6 +30,7 @@ def run_gui(node):
     task_info.grid(row=0, column=1, padx=10, sticky=(tk.W, tk.E, tk.N, tk.S))
 
     root.mainloop()
+
 def main():
     port = 8000
     while True:
@@ -46,6 +47,7 @@ def main():
     threading.Thread(target=node.listen).start()
     while True:
         command = input("Enter command (send/exit/make/list(available)(my)/accept)/gui: ")
+
         if command == "send":
             msg = input("Enter message: ")
             node.send_message(f"\nNode {port}: {msg}")

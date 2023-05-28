@@ -1,6 +1,24 @@
 import hashlib
 import datetime as date
 from Node import Node
+"""
+merdas a lembrar
+
+- o validador de cada bloco será um dos 3 workers que está a a realizar a task, 
+que possuir o maior valor de stake
+
+- esse vai ser o node responsavél por acionar a função add_block
+
+- agora como é a validação do bloco é feita tem que se ver ainda
+
+TODO - merkle tree ver como é que implementada, ficheiro a parte, dentro deste, etc ....
+
+- os nodes vão ser identificados não por um id mas atarvés do port que lhes é atribuido
+quando eles são inicializados
+
+- pelo facto de numa merkle tree ter que obrigatoriamente haver um nomero par de leaf nodes eu 
+sugiro que o numeor de pessoas que possam participar numa task sejam 4.
+"""
 
 class Block:
     def __init__(self, index, timestamp, data, previous_hash):
@@ -66,10 +84,6 @@ class Blockchain:
             return False
 
 blockchain = Blockchain()
-
-blockchain.validator(1, 10)
-blockchain.validator(2, 20)
-blockchain.validator(3, 30)
 
 # generate new block with data
 blockchain.generate_new_block("Block 1 data")

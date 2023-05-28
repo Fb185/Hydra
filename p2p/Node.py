@@ -166,8 +166,6 @@ class Node():
         if self.history_tasks[int(task_id)].accepted_nodes[1] != None:
             print("Task full")
             return
-
-
         else:
             if not self.task_exists(task_id):
                 print("Task not found")
