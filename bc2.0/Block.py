@@ -1,7 +1,7 @@
 from Merkletree import Merkletree
 
 class Block:
-    def __init__(self, index, timestamp, data, previous_hash):
+    def __init__(self, previous_hash, timestamp, index, data):
         self.previous_hash = previous_hash
         self.timestamp = timestamp
         self.index = index

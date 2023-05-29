@@ -35,18 +35,3 @@ class Merkletree:
 
 
 
-
-
-
-
-
-# Parcela de teste para a Merkle Tree
-"""
-if __name__ == "__main__":
-    data_list = ["data1", "data2", "data3", "data4"]
-    mt = Merkletree(None, None, data_list).build_merkle_tree(data_list)
-
-    print("Merkle Tree:")
-    for level, hashes in enumerate(mt):
-        print("Level", level, ":", hashes)
-"""

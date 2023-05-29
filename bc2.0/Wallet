@@ -1,4 +1,4 @@
-class wallet:
+class Wallet:
     def __init__(self, balance, stake):
         self.balance = float(balance)
         self.stake = float(stake)

@@ -37,9 +37,6 @@ def main():
 
     port = int(sys.argv[1])
     node = Node(port)
-    id = Node.node_id + 1
-    print(node)
-    print("Node-ID - ", id)
     print(f"Node started on port {port}")
     node.connect_to_peers()
     node.send_message(f"\nNode {port} has connected to the network")
