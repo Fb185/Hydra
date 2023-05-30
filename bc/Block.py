@@ -30,8 +30,7 @@ class Block:
             merkle_root.append(parent_hash)
 
         return merkle_root
-        
-
+    
     def __str__(self):
         return "Previous Hash: " + str(self.previous_hash) + "\nTimestamp: " + str(self.timestamp) + "\Index: " + str(self.index) + "\nHash: " + str(self.hash)
 
