@@ -36,35 +36,46 @@ def main():
         sys.exit(1)
 
     port = int(sys.argv[1])
+    if port < 8000 or port > 9000:
+        print("incorrect port attributed.\n")
+        sys.exit(1)
+    
     node = Node(port)
-    print(f"Node started on port {port}")
-    node.connect_to_peers()
-    node.send_message(f"\nNode {port} has connected to the network")
-    threading.Thread(target=node.listen).start()
+
+    if not node.is_port_available():
+        print("\nUnavaible port")
+        sys.exit(1)
+    else:
+        print(f"\nNode started on port {port}")
+        node.start()
+        node.send_message(f"\nNode {port} has connected to the network.")
+        threading.Thread(target=node.listen).start()
+
+
     while True:
-        command = input("\nTEMPORARY MENU\n\nCommand list: send, make, list, lista, listm, accept, gui, balance, addstake\n\n- ")
+        command = input("\nTEMPORARY MENU\n\nCommand list: send, make, list, listh, listm, balance, stake, addstake\n\n- ")
 
         if command == "send":
             msg = input("Enter message: ")
             node.send_message(f"\nNode {port}: {msg}")
 
         elif command == "make":
-            descriprion = input("Enter a description ")
-            node.make_task(descriprion)
+            if len(node.peers) < 4:
+                print("\nNot enough connected nodes to create a task.")
+                continue  # Skip task creation if there are not enough connected nodes
+            else:
+                description = input("Enter a description ")
+                node.make_task(description)
 
         elif command == "list":
-            node.list_available_tasks()
+            node.list_tasks()
 
-        elif command == "lista":
-            node.list_accepted_tasks()
+        elif command == "listh":
+            node.list_task_history()
 
         elif command == "listm":
             node.list_my_tasks()
-
-        elif command == "accept":
-            task_id = input("Enter a task ID ")
-            node.accept_task(task_id)
-
+                
         elif command == "gui":
             run_gui(node)
 
@@ -85,13 +96,10 @@ def main():
                     print("Insufficient tokens in balance.")
             else:
                 print("Invalid amount. Please enter a valid integer.")
-
-
-
+        
         elif command == "exit":
-            node.send_message(f"Node {port} has disconnected from the network")
-            node.closed = True
-            node.server_socket.close()
+            node.closed = True  # Call the close method to perform cleanup tasks
+            print(f"\nNode {port} disconnected.")
             sys.exit()
 
 

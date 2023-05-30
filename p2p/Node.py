@@ -2,23 +2,39 @@ import socket
 import threading
 import sys
 from Task import Task
+import random
 
 class Node():
     def __init__(self, port):
         self.port = port
         self.peers = []
         self.closed = False
-        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.server_socket.bind(('127.0.0.1', self.port))
-        self.accepted_tasks = []
-        self.available_tasks = []
-        self.history_tasks = []
+        self.server_socket = None
+        self.given_tasks = []
+        self.task_history = []
         self.my_tasks = []
         self.global_task_id = 0
         self.balance = 10
         self.stake = 0
-    
+
+    def start(self):
+        if not self.is_port_available():
+            print(f"Port {self.port} is already in use. Please choose a different port.")
+            return
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.server_socket.bind(('127.0.0.1', self.port))
+        self.connect_to_peers()
+        threading.Thread(target=self.listen).start()
+
+    def is_port_available(self):
+        try:
+            test_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            test_socket.bind(('127.0.0.1', self.port))
+            test_socket.close()
+            return True
+        except socket.error:
+            return False
 
     def send_to_all_peers(self, msg):
         for peer in self.peers:
@@ -30,6 +46,10 @@ class Node():
                 s.close()
             except Exception as e:
                 pass
+
+    def get_random_node(self):
+        connected_nodes = list(set(self.peers) - {self.port})
+        return random.choice(connected_nodes) if connected_nodes else None
 
     def handle_peer(self, client_socket):
         while True:
@@ -48,7 +68,7 @@ class Node():
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.connect(('127.0.0.1', peer))
                 s.send(f'M:{msg}'.encode('utf-8'))
-                # s.close()
+                s.close()
             except Exception as e:
                 pass
 
@@ -66,8 +86,8 @@ class Node():
                         continue
                     self.peers.append(int(data))
                     threading.Thread(target=self.handle_peer, args=(client_socket,)).start()
-                    for task in self.available_tasks:
-                        task_str = f"{task.id}:{task.description}:{task.author}:{','.join(str(node) for node in task.accepted_nodes)}:{task.complete}"
+                    for task in self.task_history:
+                        task_str = f"{task.id}:{task.description}:{task.author}:{','.join(str(node) for node in task.given_tasks)}:{task.complete}"
                         client_socket.send(f'T:{task_str}'.encode('utf-8'))
                 elif header == 'M:':
                     print(f'\n{data}')
@@ -77,11 +97,10 @@ class Node():
 
                 elif header == 'T:':
                     task_obj = Task.from_string(data)
-                    self.available_tasks.append(task_obj)
-                    self.history_tasks.append(task_obj)
+                    self.given_tasks.append(task_obj)
+                    self.task_history.append(task_obj)
 
                 elif header == 'A:':
-                    # self.accept_task.append(data)
                     self.accept_task(data)
 
                 elif header == 'S:':
@@ -112,176 +131,90 @@ class Node():
                             data = s.recv(1024).decode('utf-8')
                             received_task = Task.from_string(data)
                             if not self.task_exists(received_task.id):
-                                self.available_tasks.append(received_task)
+                                self.given_tasks.append(received_task)
                     except socket.timeout:
                         break  # Break the loop when the timeout occurs
-
             except Exception as e:
                 pass
 
     def task_exists(self, task_id):
-        answer = True
-        for task in self.available_tasks:
-            if task.id == int(task_id):
-                answer = True
-            else:
-                answer = False
+        for task in self.given_tasks:
+            if task.id == task_id:
+                return True
 
-        for task in self.accepted_tasks:
-            if task.id == int(task_id):
-                answer = True
-            else:
-                answer = True
-        return answer
+        for task in self.task_history:
+            if task.id == task_id:
+                return True
 
-
+        return False
 
     def make_task(self, description):
-        print("checking dupes")
-        # print(task_id)
-        # if self.task_exists(task_id):
-        #     print("Duplicate ID\n Unable to create task.")
-        #     return None
-
         new_task = Task(description, self.port, self.global_task_id)
-        self.global_task_id+=1
+        self.global_task_id += 1
 
-        self.available_tasks.append(new_task)
-        self.history_tasks.append(new_task)
+        # Randomly choose 4 nodes to assign the task
+        assigned_nodes = random.sample(set(self.peers) - {self.port}, k=4)
+
+        new_task.accepted_nodes = assigned_nodes
+        self.task_history.append(new_task)
         self.my_tasks.append(new_task)
 
-        self.send_message(f"\nNew task by {self.port}")
-        self.send_message(f"\nTask{new_task.id}: {new_task.description}")
-        for peer in self.peers:
+        # Send the task information to the assigned nodes
+        for peer in assigned_nodes:
             try:
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.connect(('127.0.0.1', peer))
                 task_str = f"{new_task.id}:{new_task.description}:{new_task.author}:{','.join(str(node) for node in new_task.accepted_nodes)}:{new_task.complete}"
+                s.send(f"\nNew task by {self.port}".encode('utf-8'))
                 s.send(f'T:{task_str}'.encode('utf-8'))
                 s.send(f'i:{self.global_task_id}'.encode('utf-8'))
+                s.send(f'A:{new_task.id}'.encode('utf-8'))  # Add task ID to accepted tasks of assigned nodes
                 s.close()
             except Exception as e:
                 pass
-        print(self.available_tasks)
-        return None
-
-    def accept_task(self, task_id):
-        import pdb
-        pdb.set_trace()
-        if self.history_tasks[int(task_id)].accepted_nodes[0] == self.port:
-            pass
-
-        if self.history_tasks[int(task_id)].accepted_nodes[1] != None:
-            print("Task full")
-            return
-        else:
-            if not self.task_exists(task_id):
-                print("Task not found")
-                return
-
-            for peer in self.peers:
-                try:
-                    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    s.connect(('127.0.0.1', peer))
-                    # self.available_tasks[int(task_id)]
-                    s.send(f'S:{self.port}:{task_id}'.encode('utf-8')) # send syncronize_tasks
-                    self.send_message(f'{self.port} has accepted task {task_id}')
-                except Exception as e:
-                    pass
-
-            if self.history_tasks[int(task_id)].accepted_nodes[0] == None:
-                self.available_tasks[int(task_id)].accepted_nodes[0] = self.port
-                self.history_tasks[int(task_id)].accepted_nodes[0] = self.port
-
-            # elif self.available_tasks[int(task_id)].accepted_nodes[0] == self.port:
-
-            else:
-                self.history_tasks[int(task_id)].accepted_nodes[1] = self.port = self.port
-                self.available_tasks[int(task_id)].accepted_nodes[1] = self.port
-
-            self.accepted_tasks.append(self.available_tasks[int(task_id)])
-            self.available_tasks.pop(int(task_id))
 
     def syncronize_tasks(self, data):
-        print("\nSyncronizing...")
+        print("\nSynchronizing...")
         data = data.split(":")
         port = data[0]
         task_id = int(data[1])
 
-        for task in self.available_tasks:
+        for task in self.task_history:
             if task.id == int(task_id):
-                print("aN0 ", task.accepted_nodes[0])
-                if task.accepted_nodes[0] == None:
+                if task.accepted_nodes[0] is None:
                     task.accepted_nodes[0] = int(port)
                 else:
                     task.accepted_nodes[1] = int(port)
 
-        for task in self.accepted_tasks:
-            if task.id == int(task_id):
-                if task.accepted_nodes[0] == None:
-                    task.accepted_nodes[0] = int(port)
-                else:
-                    task.accepted_nodes[1] = int(port)
-
-        for task in self.history_tasks:
-            if task.id == int(task_id):
-                print("aN0 ", task.accepted_nodes[0])
-                if task.accepted_nodes[0] == None:
-                    task.accepted_nodes[0] = int(port)
-                else:
-                    task.accepted_nodes[1] = int(port)
-
-        for task in self.history_tasks:
-            if task.id == int(task_id):
-                if task.accepted_nodes[0] == None:
-                    task.accepted_nodes[0] = int(port)
-                else:
-                    task.accepted_nodes[1] = int(port)
-
-    def list_available_tasks(self):
-        for task in self.available_tasks:
+    def list_tasks(self):
+        for task in self.given_tasks:
             print(str(task))
 
-    def list_accepted_tasks(self):
-        for task in self.accepted_tasks:
+    def list_task_history(self):
+        for task in self.task_history:
             print(str(task))
 
     def list_my_tasks(self):
         for task in self.my_tasks:
             print(str(task))
-    
-    
+
+    def accept_task(self, data):
+        print(f"\nTask {data} accepted by {self.port}")
+        task_id = int(data)
+        for task in self.task_history:
+            if task.id == task_id:
+                task.accepted_nodes.append(self.port)
+                break
+
     def get_balance(self):
-        return self.balance
-    
-    def get_stake(self):
-        return self.stake
-    
-    def add_tokens(self, amount):
+        print(f"\nBalance of {self.port} is {self.balance}")
+
+    def add_balance(self, amount):
         self.balance += amount
+        print(f"\nBalance of {self.port} updated to {self.balance}")
 
-    def remove_tokens(self, amount):
-        if self.balance >= amount:
-            self.balance -= amount
-        else:
-            print("Insufficient tokens.")
-
-    def add_stake(self, amount):
-        self.stake += amount
-        self.balance -= amount
-
-    def remove_stake(self, amount):
-        if self.stake >= amount:
-            self.stake -= amount
-            self.balance += amount
-        else:
-            print("Insufficient staked tokens.")
-
-    def transfer_tokens(self, amount, recipient):
-        if self.tokens >= amount:
-            self.tokens -= amount
-            recipient.add_tokens(amount)
-        else:
-            print("Insufficient tokens.")
-
-
+    def exit(self):
+        print(f"\nNode {self.port} exited")
+        self.closed = True
+        self.server_socket.close()
+        sys.exit()
