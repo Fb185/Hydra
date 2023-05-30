@@ -1,8 +1,7 @@
 import hashlib
 
 class Merkletree:
-    def __init__(self, index, timestamp, data):
-        self.index = index
+    def __init__(self, timestamp, data):
         self.timestamp = timestamp
         self.data = data
 

@@ -16,6 +16,9 @@ class Node():
         self.history_tasks = []
         self.my_tasks = []
         self.global_task_id = 0
+        self.balance = 10
+        self.stake = 0
+    
 
     def send_to_all_peers(self, msg):
         for peer in self.peers:
@@ -246,5 +249,39 @@ class Node():
     def list_my_tasks(self):
         for task in self.my_tasks:
             print(str(task))
+    
+    
+    def get_balance(self):
+        return self.balance
+    
+    def get_stake(self):
+        return self.stake
+    
+    def add_tokens(self, amount):
+        self.balance += amount
+
+    def remove_tokens(self, amount):
+        if self.balance >= amount:
+            self.balance -= amount
+        else:
+            print("Insufficient tokens.")
+
+    def add_stake(self, amount):
+        self.stake += amount
+        self.balance -= amount
+
+    def remove_stake(self, amount):
+        if self.stake >= amount:
+            self.stake -= amount
+            self.balance += amount
+        else:
+            print("Insufficient staked tokens.")
+
+    def transfer_tokens(self, amount, recipient):
+        if self.tokens >= amount:
+            self.tokens -= amount
+            recipient.add_tokens(amount)
+        else:
+            print("Insufficient tokens.")
 
 

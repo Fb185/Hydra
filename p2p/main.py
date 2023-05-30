@@ -1,7 +1,6 @@
 from Node import *
 from tkinter import ttk
 import tkinter as tk
-from Node import Node
 
 def run_gui(node):
     def on_task_select(event):
@@ -31,6 +30,7 @@ def run_gui(node):
     root.mainloop()
 
 def main():
+
     if len(sys.argv) < 2:
         print("Usage: python main.py <port>")
         sys.exit(1)
@@ -40,11 +40,9 @@ def main():
     print(f"Node started on port {port}")
     node.connect_to_peers()
     node.send_message(f"\nNode {port} has connected to the network")
-    node.send_message(f"\nNode id - ", )
-
     threading.Thread(target=node.listen).start()
     while True:
-        command = input("Enter command (send/exit/make/list/lista/listm(available)(my)/accept)/gui: ")
+        command = input("\nTEMPORARY MENU\n\nCommand list: send, make, list, lista, listm, accept, gui, balance, addstake\n\n- ")
 
         if command == "send":
             msg = input("Enter message: ")
@@ -69,6 +67,26 @@ def main():
 
         elif command == "gui":
             run_gui(node)
+
+        elif command == "balance":
+            print(node.get_balance(), "tokens")
+
+        elif command == "stake":
+            print(node.get_stake(), "tokens staked")
+        
+        elif command.startswith("addstake"):
+            tokens = command.split(" ")[1] 
+            if tokens.isdigit():
+                tokens = int(tokens)
+                if tokens <= node.get_balance():
+                    node.add_stake(tokens)
+                    print("Tokens added to stake successfully.")
+                else:
+                    print("Insufficient tokens in balance.")
+            else:
+                print("Invalid amount. Please enter a valid integer.")
+
+
 
         elif command == "exit":
             node.send_message(f"Node {port} has disconnected from the network")
