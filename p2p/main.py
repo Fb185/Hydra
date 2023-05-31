@@ -33,26 +33,19 @@ def run_gui(node):
 
 def main():
 
-    if len(sys.argv) < 2:
-        print("Usage: python main.py <port>")
-        sys.exit(1)
+    port = 8000
+    while True:
+        try:
+            node = Node(port)
+            break
+        except Exception as e:
+            port += 1
 
-    port = int(sys.argv[1])
-    if port < 8000 or port > 9000:
-        print("incorrect port attributed.\n")
-        sys.exit(1)
+    print(f"\nNode started on port {port}")
+    node.connect_to_peers()
+    node.send_message(f"\nNode {port} has connected to the network.")
+    threading.Thread(target=node.listen).start()
     
-    node = Node(port)
-
-    if not node.is_port_available():
-        print("\nUnavaible port")
-        sys.exit(1)
-    else:
-        print(f"\nNode started on port {port}")
-        node.start()
-        node.send_message(f"\nNode {port} has connected to the network.")
-        threading.Thread(target=node.listen).start()
-        
 
     while True:
         command = input("\nTEMPORARY MENU\n\nCommand list: send, make, list, listh, listm, balance, stake, addstake\n\n- ")

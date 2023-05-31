@@ -15,25 +15,7 @@ class Node():
         self.global_task_id = 0
         self.balance = 10
         self.stake = 0
-
-    def start(self):
-        if not self.is_port_available():
-            print(f"Port {self.port} is already in use. Please choose a different port.")
-            return
-        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.server_socket.bind(('127.0.0.1', self.port))
-        self.connect_to_peers()
-        threading.Thread(target=self.listen).start()
-
-    def is_port_available(self):
-        try:
-            test_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            test_socket.bind(('127.0.0.1', self.port))
-            test_socket.close()
-            return True
-        except socket.error:
-            return False
+        
 
     def send_to_all_peers(self, msg):
         for peer in self.peers:
@@ -69,7 +51,6 @@ class Node():
                 pass
 
     def listen(self):
-        self.server_socket.listen()
         self.server_socket.settimeout(1)  # Set a timeout of 1 second
         while not self.closed:
             try:
