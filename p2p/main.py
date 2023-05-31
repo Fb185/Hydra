@@ -1,6 +1,8 @@
 from Node import *
 from tkinter import ttk
 import tkinter as tk
+from Task import Task
+
 
 def run_gui(node):
     def on_task_select(event):
@@ -50,7 +52,7 @@ def main():
         node.start()
         node.send_message(f"\nNode {port} has connected to the network.")
         threading.Thread(target=node.listen).start()
-
+        
 
     while True:
         command = input("\nTEMPORARY MENU\n\nCommand list: send, make, list, listh, listm, balance, stake, addstake\n\n- ")
@@ -60,6 +62,8 @@ def main():
             node.send_message(f"\nNode {port}: {msg}")
 
         elif command == "make":
+            #Enquanto testo as task isto fica em comentário
+
             if len(node.peers) < 4:
                 print("\nNot enough connected nodes to create a task.")
                 continue  # Skip task creation if there are not enough connected nodes
@@ -68,10 +72,10 @@ def main():
                 node.make_task(description)
 
         elif command == "list":
-            node.list_tasks()
+            node.list_given_tasks()
 
         elif command == "listh":
-            node.list_task_history()
+            Task().list_task_history()
 
         elif command == "listm":
             node.list_my_tasks()
@@ -80,12 +84,12 @@ def main():
             run_gui(node)
 
         elif command == "balance":
-            print(node.get_balance(), "tokens")
+            node.get_balance()
 
         elif command == "stake":
-            print(node.get_stake(), "tokens staked")
+            node.get_stake()
         
-        elif command.startswith("addstake"):
+        elif command == "addstake":
             tokens = command.split(" ")[1] 
             if tokens.isdigit():
                 tokens = int(tokens)
@@ -98,6 +102,7 @@ def main():
                 print("Invalid amount. Please enter a valid integer.")
         
         elif command == "exit":
+            node.send_message(f"\nNode {port} has disconnected from the network.")
             node.closed = True  # Call the close method to perform cleanup tasks
             print(f"\nNode {port} disconnected.")
             sys.exit()

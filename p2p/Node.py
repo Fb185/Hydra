@@ -11,7 +11,6 @@ class Node():
         self.closed = False
         self.server_socket = None
         self.given_tasks = []
-        self.task_history = []
         self.my_tasks = []
         self.global_task_id = 0
         self.balance = 10
@@ -47,9 +46,6 @@ class Node():
             except Exception as e:
                 pass
 
-    def get_random_node(self):
-        connected_nodes = list(set(self.peers) - {self.port})
-        return random.choice(connected_nodes) if connected_nodes else None
 
     def handle_peer(self, client_socket):
         while True:
@@ -80,13 +76,12 @@ class Node():
                 client_socket, addr = self.server_socket.accept()
                 header = client_socket.recv(2).decode('utf-8')
                 data = client_socket.recv(1024).decode('utf-8')
-
                 if header == 'P:':
                     if not data:
                         continue
                     self.peers.append(int(data))
                     threading.Thread(target=self.handle_peer, args=(client_socket,)).start()
-                    for task in self.task_history:
+                    for task in Task().task_history:
                         task_str = f"{task.id}:{task.description}:{task.author}:{','.join(str(node) for node in task.given_tasks)}:{task.complete}"
                         client_socket.send(f'T:{task_str}'.encode('utf-8'))
                 elif header == 'M:':
@@ -98,7 +93,6 @@ class Node():
                 elif header == 'T:':
                     task_obj = Task.from_string(data)
                     self.given_tasks.append(task_obj)
-                    self.task_history.append(task_obj)
 
                 elif header == 'A:':
                     self.accept_task(data)
@@ -126,7 +120,6 @@ class Node():
                         header = s.recv(2).decode('utf-8')
                         if not header:
                             break
-
                         if header == 'T:':
                             data = s.recv(1024).decode('utf-8')
                             received_task = Task.from_string(data)
@@ -149,26 +142,25 @@ class Node():
         return False
 
     def make_task(self, description):
-        new_task = Task(description, self.port, self.global_task_id)
+        assigned_n = random.sample(set(self.peers) - {self.port}, k=4)
+        new_task = Task(description, self.port, assigned_n, self.global_task_id)
         self.global_task_id += 1
 
-        # Randomly choose 4 nodes to assign the task
-        assigned_nodes = random.sample(set(self.peers) - {self.port}, k=4)
-
-        new_task.accepted_nodes = assigned_nodes
-        self.task_history.append(new_task)
+        new_task.assigned_nodes = assigned_n
         self.my_tasks.append(new_task)
-
+        Task().task_history.append(new_task)
         # Send the task information to the assigned nodes
-        for peer in assigned_nodes:
+        for peer in assigned_n:
             try:
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.given_tasks.append(new_task)
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
                 s.connect(('127.0.0.1', peer))
                 task_str = f"{new_task.id}:{new_task.description}:{new_task.author}:{','.join(str(node) for node in new_task.accepted_nodes)}:{new_task.complete}"
-                s.send(f"\nNew task by {self.port}".encode('utf-8'))
                 s.send(f'T:{task_str}'.encode('utf-8'))
                 s.send(f'i:{self.global_task_id}'.encode('utf-8'))
                 s.send(f'A:{new_task.id}'.encode('utf-8'))  # Add task ID to accepted tasks of assigned nodes
+                message = f"You have been assigned task {new_task.id}."
+                s.send(f'M:{message}'.encode('utf-8'))
                 s.close()
             except Exception as e:
                 pass
@@ -181,37 +173,47 @@ class Node():
 
         for task in self.task_history:
             if task.id == int(task_id):
-                if task.accepted_nodes[0] is None:
-                    task.accepted_nodes[0] = int(port)
+                if task.assigned_nodes[0] is None:
+                    task.assigned_nodes[0] = int(port)
                 else:
-                    task.accepted_nodes[1] = int(port)
+                    task.assigned_nodes[1] = int(port)
 
-    def list_tasks(self):
+    def notify_assigned_nodes(self, assigned_nodes, task):
+        message = f'Assigned task {task.id} - {task.description}'
+        for node in assigned_nodes:
+            node.send_message(message)
+
+    def add_given_task(self, task):
+        self.given_tasks.append(task)
+
+    def list_given_tasks(self):
         for task in self.given_tasks:
-            print(str(task))
-
-    def list_task_history(self):
-        for task in self.task_history:
             print(str(task))
 
     def list_my_tasks(self):
         for task in self.my_tasks:
             print(str(task))
-
+    """
     def accept_task(self, data):
         print(f"\nTask {data} accepted by {self.port}")
         task_id = int(data)
         for task in self.task_history:
             if task.id == task_id:
-                task.accepted_nodes.append(self.port)
+                task.assigned_nodes.append(self.port)
                 break
-
+        """
     def get_balance(self):
-        print(f"\nBalance of {self.port} is {self.balance}")
+        print(f"\nYour balance is - {self.balance}")
+
+    def get_stake(self):
+        print(f"\nYour stake is - {self.stake}")
 
     def add_balance(self, amount):
         self.balance += amount
         print(f"\nBalance of {self.port} updated to {self.balance}")
+
+    def add_Stake(self, amount):
+        self.stake += amount
 
     def exit(self):
         print(f"\nNode {self.port} exited")
