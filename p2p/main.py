@@ -41,9 +41,10 @@ def main():
         except Exception as e:
             port += 1
 
-    print(f"\nNode started on port {port}")
+    print(f"Node started on port {port}")
     node.connect_to_peers()
-    node.send_message(f"\nNode {port} has connected to the network.")
+    node.send_message(f"\nNode {port} has connected to the network")
+
     threading.Thread(target=node.listen).start()
     
 

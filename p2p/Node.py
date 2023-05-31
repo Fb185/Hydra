@@ -9,7 +9,9 @@ class Node():
         self.port = port
         self.peers = []
         self.closed = False
-        self.server_socket = None
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+        self.server_socket.bind(('127.0.0.1', self.port))
         self.given_tasks = []
         self.my_tasks = []
         self.global_task_id = 0
@@ -51,6 +53,7 @@ class Node():
                 pass
 
     def listen(self):
+        self.server_socket.listen()
         self.server_socket.settimeout(1)  # Set a timeout of 1 second
         while not self.closed:
             try:
@@ -62,7 +65,7 @@ class Node():
                         continue
                     self.peers.append(int(data))
                     threading.Thread(target=self.handle_peer, args=(client_socket,)).start()
-                    for task in Task().task_history:
+                    for task in Task.task_history:
                         task_str = f"{task.id}:{task.description}:{task.author}:{','.join(str(node) for node in task.given_tasks)}:{task.complete}"
                         client_socket.send(f'T:{task_str}'.encode('utf-8'))
                 elif header == 'M:':

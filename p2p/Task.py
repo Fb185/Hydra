@@ -1,4 +1,7 @@
 class Task():
+
+    task_history = []
+
     def __init__(self, description, author, assigned_nodes, id):
         self.description = description
         self.author = author
@@ -6,7 +9,7 @@ class Task():
         self.complete = False
         self.assigned_nodes = assigned_nodes
         self.completed_nodes = set()
-        self.task_history = []
+        
 
     def from_string(task_str):
         task_data = task_str.split(":")
@@ -26,8 +29,11 @@ class Task():
     def __str__(self):
         return f"Task ID: {self.id}\nDescription: {self.description}\nAuthor: {self.author}\nAssigned Nodes: {self.assigned_nodes}\nComplete: {self.complete}\n"
 
-    def list_task_history(self):
-        for task in self.task_history:
+    def add_to_task_history(self):
+        Task.task_history.append(self)  # Add the task to the task history
+
+    def list_task_history(cls):
+        for task in cls.task_history:
             print(str(task))
 
             
