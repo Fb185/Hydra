@@ -1,7 +1,8 @@
 from Node import *
 from tkinter import ttk
 import tkinter as tk
-from Node import Node
+from Task import Task
+
 
 def run_gui(node):
     def on_task_select(event):
@@ -29,7 +30,9 @@ def run_gui(node):
     task_info.grid(row=0, column=1, padx=10, sticky=(tk.W, tk.E, tk.N, tk.S))
 
     root.mainloop()
+
 def main():
+
     port = 8000
     while True:
         try:
@@ -43,36 +46,59 @@ def main():
     node.send_message(f"\nNode {port} has connected to the network")
 
     threading.Thread(target=node.listen).start()
+    
+
     while True:
-        command = input("Enter command (send/exit/make/list(available)(my)/accept)/gui: ")
+        command = input("\nTEMPORARY MENU\n\nCommand list: send, make, list, listh, listm, balance, stake, addstake\n\n- ")
+
         if command == "send":
             msg = input("Enter message: ")
             node.send_message(f"\nNode {port}: {msg}")
 
         elif command == "make":
-            descriprion = input("Enter a description ")
-            node.make_task(descriprion)
+            #Enquanto testo as task isto fica em comentário
+
+            if len(node.peers) < 4:
+                print("\nNot enough connected nodes to create a task.")
+                continue  # Skip task creation if there are not enough connected nodes
+            else:
+                description = input("Enter a description ")
+                node.make_task(description)
 
         elif command == "list":
-            node.list_available_tasks()
+            node.list_given_tasks()
 
-        elif command == "lista":
-            node.list_accepted_tasks()
+        elif command == "listh":
+            Task().list_task_history()
 
         elif command == "listm":
             node.list_my_tasks()
-
-        elif command == "accept":
-            task_id = input("Enter a task ID ")
-            node.accept_task(task_id)
-
+                
         elif command == "gui":
             run_gui(node)
 
+        elif command == "balance":
+            node.get_balance()
+
+        elif command == "stake":
+            node.get_stake()
+        
+        elif command == "addstake":
+            tokens = command.split(" ")[1] 
+            if tokens.isdigit():
+                tokens = int(tokens)
+                if tokens <= node.get_balance():
+                    node.add_stake(tokens)
+                    print("Tokens added to stake successfully.")
+                else:
+                    print("Insufficient tokens in balance.")
+            else:
+                print("Invalid amount. Please enter a valid integer.")
+        
         elif command == "exit":
-            node.send_message(f"Node {port} has disconnected from the network")
-            node.closed = True
-            node.server_socket.close()
+            node.send_message(f"\nNode {port} has disconnected from the network.")
+            node.closed = True  # Call the close method to perform cleanup tasks
+            print(f"\nNode {port} disconnected.")
             sys.exit()
 
 
