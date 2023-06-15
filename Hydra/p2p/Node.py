@@ -13,6 +13,7 @@ class Node():
         self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
         self.server_socket.bind(('127.0.0.1', self.port))
         self.given_tasks = []
+        self.task_history = []
         self.my_tasks = []
         self.global_task_id = 0
         self.balance = 10

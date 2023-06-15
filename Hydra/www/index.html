@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>P2P Network Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        .side-panel {
+            width: 200px;
+            background-color: lightgray;
+            padding: 10px;
+        }
+        
+        .chat-panel {
+            flex: 1;
+            padding: 10px;
+        }
+        
+        .peer-list {
+            height: 80%;
+            overflow-y: auto;
+        }
+        
+        .message-list {
+            height: 80%;
+            overflow-y: auto;
+        }
+        
+        .input-field {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="side-panel">
+            <h2>Node Connections</h2>
+            <div class="peer-list">
+                <ul id="peerList"></ul>
+            </div>
+        </div>
+        <div class="chat-panel">
+            <h2>Main Chat</h2>
+            <div class="message-list">
+                <ul id="messageList"></ul>
+            </div>
+            <div class="input-field">
+                <input type="text" id="messageInput" placeholder="Type your message..." />
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    </script>
+</body>
+</html>
