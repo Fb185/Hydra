@@ -30,6 +30,7 @@ def run_gui(node):
 
     root.mainloop()
 def main():
+    import pdb
     port = 8000
     while True:
         try:
@@ -78,3 +79,8 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+
+

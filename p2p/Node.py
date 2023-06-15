@@ -9,7 +9,7 @@ class Node():
         self.peers = []
         self.closed = False
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server_socket.bind(('127.0.0.1', self.port))
         self.accepted_tasks = []
         self.available_tasks = []
@@ -90,11 +90,17 @@ class Node():
                 break  # If the server socket is closed, break the loop
 
     def connect_to_peers(self):
+        print(self.port)
+        print("asdf")
         for i in range(8000, self.port):
             try:
+                print("after asdfasdftry")
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                print("after s defined")
                 s.settimeout(1/2)  # Add a timeout to the socket
+                print("after timeout")
                 s.connect(('127.0.0.1', i))
+                print("connected")
                 s.send(f'P:{self.port}'.encode('utf-8'))
                 self.peers.append(i)
                 threading.Thread(target=self.handle_peer, args=(s,)).start()
