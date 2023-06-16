@@ -15,22 +15,11 @@ class Node():
         self.balance = 10
         self.stake = 0
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
         self.server_socket.bind(('127.0.0.1', self.port))
-        
+
 
     # COMPONENTE DA REDE P2P
 
-    def send_to_all_peers(self, msg):
-        for peer in self.peers:
-            try:
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.connect(('127.0.0.1', peer))
-                s.send(msg.encode('utf-8'))
-                threading.Thread(target=self.handle_peer, args=(s,)).start()
-                s.close()
-            except Exception as e:
-                pass
 
     def handle_peer(self, client_socket):
         while True:
@@ -54,6 +43,12 @@ class Node():
             except Exception as e:
                 pass
 
+    def send_to_peer(self, msg, peer):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect(('127.0.0.1', int(peer)))
+        s.send(f'M:{msg}'.encode('utf-8'))
+        s.close()
+
     def listen(self):
         self.server_socket.listen()
         self.server_socket.settimeout(1)  # Set a timeout of 1 second
@@ -63,13 +58,8 @@ class Node():
                 header = client_socket.recv(2).decode('utf-8')
                 data = client_socket.recv(1024).decode('utf-8')
                 if header == 'P:':
-                    if not data:
-                        continue
                     self.peers.append(int(data))
                     threading.Thread(target=self.handle_peer, args=(client_socket,)).start()
-                    for task in Task.task_history:
-                        task_str = f"{task.id}:{task.description}:{task.author}:{','.join(str(node) for node in task.given_tasks)}:{task.complete}"
-                        client_socket.send(f'T:{task_str}'.encode('utf-8'))
                 elif header == 'M:':
                     print(f'\n{data}')
 
@@ -80,8 +70,10 @@ class Node():
                     task_obj = Task.from_string(data)
                     self.given_tasks.append(task_obj)
 
-                elif header == 'S:':
-                    self.syncronize_tasks(data)
+                elif header == 'v:':
+                    self.send_to_peer(self.stake, data)
+
+
 
             except socket.timeout:
                 continue  # If the timeout occurs, just continue the loop
@@ -97,19 +89,6 @@ class Node():
                 s.send(f'P:{self.port}'.encode('utf-8'))
                 self.peers.append(i)
                 threading.Thread(target=self.handle_peer, args=(s,)).start()
-
-                while True:  # Receive tasks from the connected peer
-                    try:
-                        header = s.recv(2).decode('utf-8')
-                        if not header:
-                            break
-                        if header == 'T:':
-                            data = s.recv(1024).decode('utf-8')
-                            received_task = Task.from_string(data)
-                            if not self.task_exists(received_task.id):
-                                self.given_tasks.append(received_task)
-                    except socket.timeout:
-                        break  # Break the loop when the timeout occurs
             except Exception as e:
                 pass
 
@@ -117,57 +96,90 @@ class Node():
     #COMPONENTE DAS TASKS
 
     def make_task(self, description):
-        assigned_n = random.sample(set(self.peers) - {self.port}, k=4)
-        new_task = Task(description, self.port, assigned_n, self.global_task_id)
-        self.global_task_id += 1
-        new_task.assigned_nodes = assigned_n
-        # Send the task information to the assigned nodes
+        menu = {
+            "1": {"difficulty": "Tier A", "price": 5},
+            "2": {"difficulty": "Tier B", "price": 7},
+            "3": {"difficulty": "Tier C", "price": 10}
+        }
+        tier = input("""
+        Welcome to the Menu:
+        Please select an option:
+        1. Tier A - $5
+        2. Tier B - $7
+        3. Tier C - $10
+        """)
+        selected_option = input("Option: ")
+        if selected_option in menu:
+            tier = menu[selected_option]
+            if self.balance >= tier["price"]:
+                self.balance -= tier["price"]
+                print(f"{tier['difficulty']} purchased successfully!")
+                assigned_n = random.sample([peer for peer in self.peers if peer != self.port], k=4)
+
+                # assigns the validator based on who has the most staked coin from assigned_n
+
+                # validator_peer = None
+                # max_stake = float('-inf')
+
+
+                # for peer in assigned_n:
+                #     try:
+                #         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                #         s.connect(('127.0.0.1', peer))
+                #         s.send(f'v:{self.port}'.encode('utf-8'))
+                #         self.server_socket.listen()
+                #         while not self.closed:
+                #             client_socket, addr = self.server_socket.accept()
+                #             header = client_socket.recv(2).decode('utf-8')
+                #             data = client_socket.recv(1024).decode('utf-8')
+                #             if header == 'r:':
+                #                 stake = int(data)
+                #                 if stake > max_stake:
+                #                     max_stake = stake
+                #                     validator_peer = peer
+
+                #     except:
+                #         print("something happened")
+                #     # Assuming `stake` is an attribute or property of the peer object
+
+                validator_peer = random.choice([peer for peer in self.peers if peer != self.port])
+                new_task = Task(self.global_task_id,description, self.port, assigned_n, validator_peer, tier )
+                self.global_task_id += 1
+                new_task.assigned_nodes = assigned_n
+                # Send the task information to the assigned nodes
+                for peer in assigned_n:
+                    try:
+                        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        s.connect(('127.0.0.1', peer))
+                        task_str = f"{new_task.id}:{new_task.description}:{new_task.author}:{','.join(str(node) for node in new_task.assigned_nodes)}:{new_task.complete}:{new_task.validator}:{new_task.difficulty}"
+                        s.send(f'T:{task_str}'.encode('utf-8'))
+                        s.send(f'i:{self.global_task_id}'.encode('utf-8'))
+                        s.close()
+                    except Exception as e:
+                        pass
+                self.notify_assigned_nodes(assigned_n)
+                self.my_tasks.append(new_task)
+            else:
+                print(f"Insufficient balance to purchase {tier['difficulty']}.")
+                return
+        else:
+            print("Invalid option selected.")
+
+
+
+    def notify_assigned_nodes(self, assigned_n):
+        message = "You have been assigned task"
         for peer in assigned_n:
             try:
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.connect(('127.0.0.1', peer))
-                task_str = f"{new_task.id}:{new_task.description}:{new_task.author}:{','.join(str(node) for node in new_task.assigned_nodes)}:{new_task.complete}"
-                s.send(f'T:{task_str}'.encode('utf-8'))
-                s.send(f'i:{self.global_task_id}'.encode('utf-8'))
-                self.notify_assigned_nodes(peer, new_task)
-                print("3")
+                s.send(f'M:{message}'.encode('utf-8'))
+                s.close()
             except Exception as e:
                 pass
-        self.my_tasks.append(new_task)
-
-    """
-
-    def task_exists(self, task_id):
-        for task in self.given_tasks:
-            if task.id == task_id:
-                return True
-
-        for task in self.task_history:
-            if task.id == task_id:
-                return True
-
-        return False
 
 
 
-    def syncronize_tasks(self, data):
-        print("\nSynchronizing...")
-        data = data.split(":")
-        port = data[0]
-        task_id = int(data[1])
-
-        for task in self.task_history:
-            if task.id == int(task_id):
-                if task.assigned_nodes[0] is None:
-                    task.assigned_nodes[0] = int(port)
-                else:
-                    task.assigned_nodes[1] = int(port)
-                
-    """
-
-    def notify_assigned_nodes(self, node, task):
-        message = f'You have been assigned task {task.id} - {task.description}'
-        node.send_message(message)
 
     def list_given_tasks(self):
         for task in self.given_tasks:
@@ -180,14 +192,19 @@ class Node():
     def get_balance(self):
         print(f"\nYour balance is - {self.balance}")
 
-    def get_stake(self):
+    def print_stake(self):
         print(f"\nYour stake is - {self.stake}")
+
+    def get_stake(self):
+        return self.stake
 
     def add_balance(self, amount):
         self.balance += amount
         print(f"\nBalance of {self.port} updated to {self.balance}")
 
-    def add_stake(self, amount):
+    def add_stake(self):
+
+        amount = int(input("How many tokens: "))
         self.stake += amount
 
     def exit(self):

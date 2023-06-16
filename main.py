@@ -47,7 +47,7 @@ def main():
     node.send_message(f"\nNode {port} has connected to the network")
 
     threading.Thread(target=node.listen).start()
-    
+
 
     while True:
         command = input("\nTEMPORARY MENU\n\nCommand list:\n\nsend\nmake\nlistg\nlistm\nbalance\nstake\naddstake\n\n- ")
@@ -71,7 +71,7 @@ def main():
 
         elif command == "listm":
             node.list_my_tasks()
-                
+
         #elif command == "gui":
             #run_gui(node)
 
@@ -79,20 +79,11 @@ def main():
             node.get_balance()
 
         elif command == "stake":
-            node.get_stake()
-        
+            node.print_stake()
+
         elif command == "addstake":
-            try:
-                tokens = int(input("How many tokens: "))
-                if tokens > node.get_balance():
-                    print("Insufficient tokens in balance.")
-                elif node.get_balance() == 0:
-                    print("No money")
-                else:
-                    node.add_stake(tokens)
-                    print("Tokens added to stake successfully.")
-            except ValueError:
-                print("Invalid amount. Please enter a valid integer.")
+            node.add_stake()
+
 
         elif command == "exit":
             node.send_message(f"\nNode {port} has disconnected from the network.")
