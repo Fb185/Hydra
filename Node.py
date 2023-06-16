@@ -9,16 +9,17 @@ class Node():
         self.port = port
         self.peers = []
         self.closed = False
-        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
-        self.server_socket.bind(('127.0.0.1', self.port))
         self.given_tasks = []
-        self.task_history = []
         self.my_tasks = []
         self.global_task_id = 0
         self.balance = 10
         self.stake = 0
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+        self.server_socket.bind(('127.0.0.1', self.port))
         
+
+    # COMPONENTE DA REDE P2P
 
     def send_to_all_peers(self, msg):
         for peer in self.peers:
@@ -31,14 +32,14 @@ class Node():
             except Exception as e:
                 pass
 
-
     def handle_peer(self, client_socket):
         while True:
             try:
                 msg = client_socket.recv(1024).decode('utf-8')
                 if not msg:
                     break
-                print(msg)
+                else:
+                    print(msg)
             except Exception as e:
                 break
         client_socket.close()
@@ -79,9 +80,6 @@ class Node():
                     task_obj = Task.from_string(data)
                     self.given_tasks.append(task_obj)
 
-                elif header == 'A:':
-                    self.accept_task(data)
-
                 elif header == 'S:':
                     self.syncronize_tasks(data)
 
@@ -115,6 +113,30 @@ class Node():
             except Exception as e:
                 pass
 
+
+    #COMPONENTE DAS TASKS
+
+    def make_task(self, description):
+        assigned_n = random.sample(set(self.peers) - {self.port}, k=4)
+        new_task = Task(description, self.port, assigned_n, self.global_task_id)
+        self.global_task_id += 1
+        new_task.assigned_nodes = assigned_n
+        # Send the task information to the assigned nodes
+        for peer in assigned_n:
+            try:
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+                s.connect(('127.0.0.1', peer))
+                task_str = f"{new_task.id}:{new_task.description}:{new_task.author}:{','.join(str(node) for node in new_task.assigned_nodes)}:{new_task.complete}"
+                s.send(f'T:{task_str}'.encode('utf-8'))
+                s.send(f'i:{self.global_task_id}'.encode('utf-8'))
+                self.notify_assigned_nodes(peer, new_task)
+                print("3")
+            except Exception as e:
+                pass
+        self.my_tasks.append(new_task)
+
+    """
+
     def task_exists(self, task_id):
         for task in self.given_tasks:
             if task.id == task_id:
@@ -126,29 +148,7 @@ class Node():
 
         return False
 
-    def make_task(self, description):
-        assigned_n = random.sample(set(self.peers) - {self.port}, k=4)
-        new_task = Task(description, self.port, assigned_n, self.global_task_id)
-        self.global_task_id += 1
 
-        new_task.assigned_nodes = assigned_n
-        self.my_tasks.append(new_task)
-        Task().task_history.append(new_task)
-        # Send the task information to the assigned nodes
-        for peer in assigned_n:
-            try:
-                self.given_tasks.append(new_task)
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-                s.connect(('127.0.0.1', peer))
-                task_str = f"{new_task.id}:{new_task.description}:{new_task.author}:{','.join(str(node) for node in new_task.accepted_nodes)}:{new_task.complete}"
-                s.send(f'T:{task_str}'.encode('utf-8'))
-                s.send(f'i:{self.global_task_id}'.encode('utf-8'))
-                s.send(f'A:{new_task.id}'.encode('utf-8'))  # Add task ID to accepted tasks of assigned nodes
-                message = f"You have been assigned task {new_task.id}."
-                s.send(f'M:{message}'.encode('utf-8'))
-                s.close()
-            except Exception as e:
-                pass
 
     def syncronize_tasks(self, data):
         print("\nSynchronizing...")
@@ -162,14 +162,12 @@ class Node():
                     task.assigned_nodes[0] = int(port)
                 else:
                     task.assigned_nodes[1] = int(port)
+                
+    """
 
-    def notify_assigned_nodes(self, assigned_nodes, task):
-        message = f'Assigned task {task.id} - {task.description}'
-        for node in assigned_nodes:
-            node.send_message(message)
-
-    def add_given_task(self, task):
-        self.given_tasks.append(task)
+    def notify_assigned_nodes(self, node, task):
+        message = f'You have been assigned task {task.id} - {task.description}'
+        node.send_message(message)
 
     def list_given_tasks(self):
         for task in self.given_tasks:
@@ -178,15 +176,7 @@ class Node():
     def list_my_tasks(self):
         for task in self.my_tasks:
             print(str(task))
-    """
-    def accept_task(self, data):
-        print(f"\nTask {data} accepted by {self.port}")
-        task_id = int(data)
-        for task in self.task_history:
-            if task.id == task_id:
-                task.assigned_nodes.append(self.port)
-                break
-        """
+
     def get_balance(self):
         print(f"\nYour balance is - {self.balance}")
 
@@ -197,7 +187,7 @@ class Node():
         self.balance += amount
         print(f"\nBalance of {self.port} updated to {self.balance}")
 
-    def add_Stake(self, amount):
+    def add_stake(self, amount):
         self.stake += amount
 
     def exit(self):

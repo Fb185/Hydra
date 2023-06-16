@@ -17,13 +17,13 @@ class Blockchain:
     def add_block(self, new_block):
         self.chain.append(new_block)
 
-    def validate_blockchain(self, data):
+    def validate_blockchain(self, content):
         for i in range(1, len(self.chain)):
             current_block = self.chain[i]
             previous_block = self.chain[i - 1]
 
             # Validate block hash
-            merkle_tree = Block(None, None, None, data)
+            merkle_tree = Block(None, None, None, content)
             if current_block.hash != merkle_tree.build_merkle_tree(data):
                 return False
             # Validate previous hash
