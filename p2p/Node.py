@@ -13,7 +13,6 @@ class Node():
         self.server_socket.bind(('127.0.0.1', self.port))
         self.accepted_tasks = []
         self.available_tasks = []
-        self.history_tasks = []
         self.my_tasks = []
         self.global_task_id = 0
 
@@ -90,17 +89,11 @@ class Node():
                 break  # If the server socket is closed, break the loop
 
     def connect_to_peers(self):
-        print(self.port)
-        print("asdf")
         for i in range(8000, self.port):
             try:
-                print("after asdfasdftry")
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                print("after s defined")
                 s.settimeout(1/2)  # Add a timeout to the socket
-                print("after timeout")
                 s.connect(('127.0.0.1', i))
-                print("connected")
                 s.send(f'P:{self.port}'.encode('utf-8'))
                 self.peers.append(i)
                 threading.Thread(target=self.handle_peer, args=(s,)).start()
@@ -145,7 +138,6 @@ class Node():
         self.global_task_id+=1
 
         self.available_tasks.append(new_task)
-        self.history_tasks.append(new_task)
         self.my_tasks.append(new_task)
 
         self.send_message(f"\nNew task by {self.port}")
@@ -164,11 +156,6 @@ class Node():
         return None
 
     def accept_task(self, task_id):
-        import pdb
-        pdb.set_trace()
-        if self.history_tasks[int(task_id)].accepted_nodes[0] == self.port:
-            pass
-
         if self.history_tasks[int(task_id)].accepted_nodes[1] != None:
             print("Task full")
             return
@@ -189,15 +176,6 @@ class Node():
                 except Exception as e:
                     pass
 
-            if self.history_tasks[int(task_id)].accepted_nodes[0] == None:
-                self.available_tasks[int(task_id)].accepted_nodes[0] = self.port
-                self.history_tasks[int(task_id)].accepted_nodes[0] = self.port
-
-            # elif self.available_tasks[int(task_id)].accepted_nodes[0] == self.port:
-
-            else:
-                self.history_tasks[int(task_id)].accepted_nodes[1] = self.port = self.port
-                self.available_tasks[int(task_id)].accepted_nodes[1] = self.port
 
             self.accepted_tasks.append(self.available_tasks[int(task_id)])
             self.available_tasks.pop(int(task_id))
@@ -223,20 +201,6 @@ class Node():
                 else:
                     task.accepted_nodes[1] = int(port)
 
-        for task in self.history_tasks:
-            if task.id == int(task_id):
-                print("aN0 ", task.accepted_nodes[0])
-                if task.accepted_nodes[0] == None:
-                    task.accepted_nodes[0] = int(port)
-                else:
-                    task.accepted_nodes[1] = int(port)
-
-        for task in self.history_tasks:
-            if task.id == int(task_id):
-                if task.accepted_nodes[0] == None:
-                    task.accepted_nodes[0] = int(port)
-                else:
-                    task.accepted_nodes[1] = int(port)
 
     def list_available_tasks(self):
         for task in self.available_tasks:
