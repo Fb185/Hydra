@@ -6,7 +6,8 @@ class Block:
         self.hash = self.build_merkle_tree(content)
         self.timestamp = timestamp
         self.index = index
-        
+        self.content = content
+
 
     def calculate_hash(self, content):
         sha = hashlib.sha256()
@@ -31,8 +32,8 @@ class Block:
             merkle_root.append(parent_hash)
 
         return merkle_root
-    
+
     def __str__(self):
-        return "Previous Hash: " + str(self.previous_hash) + "\nHash: " + str(self.hash) + "\nTimestamp: " + str(self.timestamp) + "\Index: " + str(self.index) 
+        return "Previous Hash: " + str(self.previous_hash) + "\nHash: " + str(self.hash) + "\nTimestamp: " + str(self.timestamp) + "\nIndex: " + str(self.index)
 
 
