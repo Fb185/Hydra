@@ -85,7 +85,7 @@ def main():
             node.add_stake()
 
 
-        elif command == "exit":
+        elif command == "e":
             node.send_message(f"\nNode {port} has disconnected from the network.")
             node.closed = True  # Call the close method to perform cleanup tasks
             print(f"\nNode {port} disconnected.")

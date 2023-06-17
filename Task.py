@@ -24,6 +24,10 @@ class Task():
         task.complete = complete
         return task
 
+    def get_author(self):
+        return self.author
+
+
     def check_completed(self):
         if len(self.completed_nodes) == len(self.assigned_nodes):
             self.complete = True
