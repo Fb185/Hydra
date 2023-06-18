@@ -2,13 +2,13 @@ import datetime as date
 from Block import Block
 import random
 import time
-
+from ledger import Ledger
 
 class Blockchain:
     def __init__(self):
         self.chain = [self.create_genesis_block()]
         self.stakeholders = {}  # Dictionary to store stakeholders and their stakes
-
+        self.ledger = Ledger()
 
     def get_latest_block(self):
         return self.chain[-1]
@@ -20,12 +20,10 @@ class Blockchain:
         for i in range(1, len(self.chain)):
             current_block = self.chain[i]
             previous_block = self.chain[i - 1]
-
             # Validate block hash
             merkle_tree = Block(None, None, None, content)
             # if current_block.hash != merkle_tree.build_merkle_tree(data):
             if current_block.hash != merkle_tree.build_merkle_tree(current_block.content)[0]:
-
                 return False
             # Validate previous hash
             if current_block.previous_hash != previous_block.hash:
@@ -44,6 +42,7 @@ class Blockchain:
         # creator = self.select_block_creator()
         new_block = Block(previous_hash, timestamp, int(self.get_latest_block().index) + 1, content)
         self.add_block(new_block)
+        self.ledger.add_block(new_block)
         print("New block created:\n" + str(new_block))
 
     def select_block_creator(self):
@@ -77,3 +76,4 @@ if __name__ == "__main__":
     # Validate the blockchain
     is_valid = blockchain.validate_blockchain(data)
     print("Blockchain is valid:", is_valid)
+

@@ -1,7 +1,7 @@
 from Node import *
 from tkinter import ttk
 import tkinter as tk
-from Task import Task
+from Blockchain import *
 
 """
 def run_gui(node):
@@ -57,23 +57,19 @@ def main():
             node.send_message(f"\nNode {port}: {msg}")
 
         elif command == "make":
-            """
+            
             if len(node.peers) < 4:
                 print("\nNot enough connected nodes to create a task.")
                 continue  # Skip task creation if there are not enough connected nodes
-            else:
-            """
-            description = input("Enter a description ")
-            node.make_task(description)
+            else:   
+                description = input("Enter a description ")
+                node.make_task(description)
 
         elif command == "listg":
             node.list_given_tasks()
 
         elif command == "listm":
             node.list_my_tasks()
-
-        #elif command == "gui":
-            #run_gui(node)
 
         elif command == "balance":
             node.get_balance()

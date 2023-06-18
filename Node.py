@@ -218,7 +218,7 @@ class Node():
                         print("something went wrong with rewards\n", e)
 
                 try:
-                    print("validatot ", validator_peer)
+                    print("validator ", validator_peer)
                     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     s.connect(('127.0.0.1', validator_peer))
                     if tier["difficulty"] == "Tier A":
@@ -269,8 +269,6 @@ class Node():
                 pass
 
 
-
-
     def clear_screen(self):
         # Clear command for Windows
         if os.name == 'nt':
@@ -300,9 +298,6 @@ class Node():
         self.balance = self.balance + self.stake
         self.stake = 0
         print("stake ", self.stake)
-
-
-
 
     def list_given_tasks(self):
         for task in self.given_tasks:

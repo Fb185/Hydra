@@ -9,7 +9,6 @@ class Task():
         self.assigned_nodes = assigned_nodes
         self.validator = validator
         self.difficulty = difficulty
-        #self.reward = reward
 
     def from_string(task_str):
         task_data = task_str.split(":")
