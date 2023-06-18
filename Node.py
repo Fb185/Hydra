@@ -106,6 +106,162 @@ class Node():
 
     #COMPONENTE DAS TASKS
 
+    # def make_task(self, description):
+    #     menu = {
+    #         "1": {"difficulty": "Tier A", "price": 5},
+    #         "2": {"difficulty": "Tier B", "price": 10},
+    #         "3": {"difficulty": "Tier C", "price": 15}
+    #     }
+    #     tier = input("""
+    #     Welcome to the Menu:
+    #     Please select an option:
+    #     1. Tier A - $5
+    #     2. Tier B - $10
+    #     3. Tier C - $15
+    #     """)
+    #     selected_option = input("Option: ")
+    #     if selected_option in menu:
+    #         tier = menu[selected_option]
+    #         if self.balance >= tier["price"]:
+    #             self.balance -= tier["price"]
+    #             print(f"{tier['difficulty']} purchased successfully!")
+    #             print("Defining validator")
+    #             assigned_n = random.sample([peer for peer in self.peers if peer != self.port], k=4)
+
+    #             # assigns the validator based on who has the most staked coin from assigned_n
+
+    #             validator_peer = None
+    #             max_stake = float('-inf')
+
+
+    #             for peer in assigned_n:
+    #                 try:
+    #                     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    #                     s.connect(('127.0.0.1', peer))
+    #                     s.send(f'v:{self.port}'.encode('utf-8'))
+    #                     self.server_socket.listen()
+    #                     while not self.closed:
+    #                         client_socket, addr = self.server_socket.accept()
+    #                         header = client_socket.recv(2).decode('utf-8')
+    #                         data = client_socket.recv(1024).decode('utf-8')
+    #                         if header == 'r:':
+    #                             stake = int(data)
+    #                             if stake > max_stake:
+    #                                 max_stake = stake
+    #                                 validator_peer = peer
+    #                     # self.server_socket.close()
+
+    #                 except:
+    #                     pass
+
+    #             print("validator set")
+    #             new_task = Task(self.global_task_id,description, self.port, assigned_n, validator_peer, tier )
+    #             self.global_task_id += 1
+    #             new_task.assigned_nodes = assigned_n
+    #             # Send the task information to the assigned nodes
+    #             for peer in assigned_n:
+    #                 try:
+    #                     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    #                     s.connect(('127.0.0.1', peer))
+    #                     task_str = f"{new_task.id}:{new_task.description}:{new_task.author}:{','.join(str(node) for node in new_task.assigned_nodes)}:{new_task.complete}:{new_task.validator}:{new_task.difficulty}"
+    #                     s.send(f'T:{task_str}'.encode('utf-8'))
+    #                     s.send(f'i:{self.global_task_id}'.encode('utf-8'))
+    #                     # s.close()
+    #                 except Exception as e:
+    #                     pass
+    #             self.notify_assigned_nodes(assigned_n)
+    #             self.my_tasks.append(new_task)
+
+    #             self.clear_screen()
+    #             print("Waiting for workers..", end='', flush=True)
+    #             # time.sleep(10)
+
+    #             workers_complete = 0
+    #             # for peer in assigned_n:
+    #             try:
+
+    #                 workers_complete = 0
+    #                 timeout = 10  # Timeout duration in seconds
+    #                 start_time = time.time()
+
+    #                 while workers_complete != 4 and time.time() - start_time < timeout:
+    #                     try:
+    #                         self.server_socket.settimeout(timeout - (time.time() - start_time))
+    #                         client_socket, addr = self.server_socket.accept()
+    #                         header = client_socket.recv(2).decode('utf-8')
+    #                         if header == 'c:':
+    #                             print("got worker ping")
+    #                             workers_complete += 1
+    #                             print(workers_complete)
+    #                     except socket.timeout:
+    #                         # Timeout occurred, continue waiting for more headers
+    #                         continue
+    #             except Exception as e:
+    #                 print("something happened getting worker complete packets\n", e)
+
+    #             for peer in assigned_n:
+    #                 try:
+    #                     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    #                     s.connect(('127.0.0.1', peer))
+
+    #                     if tier["difficulty"] == "Tier A":
+    #                         print("sending")
+    #                         s.send(f'R:{1}'.encode('utf-8'))
+    #                         print("giving reward")
+    #                         # s.close()
+
+    #                     if tier["difficulty"] == "Tier B":
+    #                         s.send(f'R:{2}'.encode('utf-8'))
+    #                         print("giving reward")
+    #                         # s.close()
+
+    #                     if tier["difficulty"] == "Tier C":
+    #                         s.send(f'R:{3}'.encode('utf-8'))
+    #                         print("giving reward")
+    #                         # s.close()
+
+    #                     # self.server_socket.close()
+
+    #                 except Exception as e:
+    #                     print("something went wrong with rewards\n", e)
+
+    #             try:
+    #                 print("validator ", validator_peer)
+    #                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    #                 s.connect(('127.0.0.1', validator_peer))
+    #                 if tier["difficulty"] == "Tier A":
+    #                     print("giving reward")
+    #                     s.send(f'R:{1}'.encode('utf-8'))
+    #                     # s.close()
+
+    #                 if tier["difficulty"] == "Tier B":
+    #                     s.connect(('127.0.0.1', validator_peer))
+    #                     s.send(f'R:{2}'.encode('utf-8'))
+    #                     print("giving reward")
+    #                     # s.close()
+
+    #                 if tier["difficulty"] == "Tier C":
+    #                     s.connect(('127.0.0.1', validator_peer))
+    #                     s.send(f'R:{3}'.encode('utf-8'))
+    #                     print("giving reward")
+    #                     # s.close()
+
+    #                     # self.server_socket.close()
+    #             except Exception as e:
+    #                 print(e)
+
+    #             # Number of seconds for the timer
+
+    #             print("\nTask completed!")
+
+
+
+    #         else:
+    #             print(f"Insufficient balance to purchase {tier['difficulty']}.")
+    #             return
+    #     else:
+    #         print("Invalid option selected.")
+
     def make_task(self, description):
         menu = {
             "1": {"difficulty": "Tier A", "price": 5},
@@ -133,7 +289,6 @@ class Node():
                 validator_peer = None
                 max_stake = float('-inf')
 
-
                 for peer in assigned_n:
                     try:
                         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -149,13 +304,12 @@ class Node():
                                 if stake > max_stake:
                                     max_stake = stake
                                     validator_peer = peer
-                        # self.server_socket.close()
 
                     except:
                         pass
 
                 print("validator set")
-                new_task = Task(self.global_task_id,description, self.port, assigned_n, validator_peer, tier )
+                new_task = Task(self.global_task_id, description, self.port, assigned_n, validator_peer, tier)
                 self.global_task_id += 1
                 new_task.assigned_nodes = assigned_n
                 # Send the task information to the assigned nodes
@@ -166,7 +320,6 @@ class Node():
                         task_str = f"{new_task.id}:{new_task.description}:{new_task.author}:{','.join(str(node) for node in new_task.assigned_nodes)}:{new_task.complete}:{new_task.validator}:{new_task.difficulty}"
                         s.send(f'T:{task_str}'.encode('utf-8'))
                         s.send(f'i:{self.global_task_id}'.encode('utf-8'))
-                        # s.close()
                     except Exception as e:
                         pass
                 self.notify_assigned_nodes(assigned_n)
@@ -174,23 +327,24 @@ class Node():
 
                 self.clear_screen()
                 print("Waiting for workers..", end='', flush=True)
+                threading.Thread(target=self.listen_for_messages).start()  # Placement of the threading line
 
                 workers_complete = 0
-                # for peer in assigned_n:
-                try:
-                    # s.send(f'c:{self.port}'.encode('utf-8'))
-                    while workers_complete != 4:
-                        self.server_socket.listen()
+                timeout = 10  # Timeout duration in seconds
+                start_time = time.time()
+
+                while workers_complete != 4 and time.time() - start_time < timeout:
+                    try:
+                        self.server_socket.settimeout(timeout - (time.time() - start_time))
                         client_socket, addr = self.server_socket.accept()
                         header = client_socket.recv(2).decode('utf-8')
                         if header == 'c:':
                             print("got worker ping")
                             workers_complete += 1
                             print(workers_complete)
-
-                except Exception as e:
-                    print("something happened getting worker complete packets\n", e)
-
+                    except socket.timeout:
+                        # Timeout occurred, continue waiting for more headers
+                        continue
                 for peer in assigned_n:
                     try:
                         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -200,19 +354,14 @@ class Node():
                             print("sending")
                             s.send(f'R:{1}'.encode('utf-8'))
                             print("giving reward")
-                            # s.close()
 
                         if tier["difficulty"] == "Tier B":
                             s.send(f'R:{2}'.encode('utf-8'))
                             print("giving reward")
-                            # s.close()
 
                         if tier["difficulty"] == "Tier C":
                             s.send(f'R:{3}'.encode('utf-8'))
                             print("giving reward")
-                            # s.close()
-
-                        # self.server_socket.close()
 
                     except Exception as e:
                         print("something went wrong with rewards\n", e)
@@ -224,29 +373,21 @@ class Node():
                     if tier["difficulty"] == "Tier A":
                         print("giving reward")
                         s.send(f'R:{1}'.encode('utf-8'))
-                        # s.close()
 
                     if tier["difficulty"] == "Tier B":
                         s.connect(('127.0.0.1', validator_peer))
                         s.send(f'R:{2}'.encode('utf-8'))
                         print("giving reward")
-                        # s.close()
 
                     if tier["difficulty"] == "Tier C":
                         s.connect(('127.0.0.1', validator_peer))
                         s.send(f'R:{3}'.encode('utf-8'))
                         print("giving reward")
-                        # s.close()
 
-                        # self.server_socket.close()
                 except Exception as e:
                     print(e)
 
-                # Number of seconds for the timer
-
                 print("\nTask completed!")
-
-
 
             else:
                 print(f"Insufficient balance to purchase {tier['difficulty']}.")
@@ -254,7 +395,19 @@ class Node():
         else:
             print("Invalid option selected.")
 
-
+    def listen_for_messages(self):
+        self.server_socket.listen()
+        self.server_socket.settimeout(1)
+        while not self.closed:
+            try:
+                client_socket, addr = self.server_socket.accept()
+                header = client_socket.recv(2).decode('utf-8')
+                if header == 'c:':
+                    print("got worker ping")
+            except socket.timeout:
+                continue
+            except OSError as e:
+                break
 
     def notify_assigned_nodes(self, assigned_n):
         message = "You have been assigned task.\n Starting work shortly."
@@ -286,7 +439,7 @@ class Node():
         for _ in range(timer_duration):
             time.sleep(1)
             print(".", end='', flush=True)
-        # self.clear_screen()
+        self.clear_screen()
 
         author = self.given_tasks[0].get_author()
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
