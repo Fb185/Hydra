@@ -33,6 +33,10 @@ class Block:
 
         return merkle_root
 
+
+    def view_merkle_tree(self):
+        return self.hash
+
     def __str__(self):
         return "Previous Hash: " + str(self.previous_hash) + "\nHash: " + str(self.hash) + "\nTimestamp: " + str(self.timestamp) + "\nIndex: " + str(self.index)
 
