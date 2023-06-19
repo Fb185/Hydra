@@ -12,6 +12,9 @@ class Blockchain:
     def get_latest_block(self):
         return self.chain[-1]
 
+    def get_blockchain(self):
+        return self.chain
+
     def add_block(self, new_block):
         self.chain.append(new_block)
 
@@ -33,30 +36,13 @@ class Blockchain:
         previous_hash = self.get_latest_block().hash
 
         # Select a block creator based on stake
-        content_str = ''.join(content)
-        new_block = Block(previous_hash, timestamp, int(self.get_latest_block().index) + 1, content_str)
+        # content_str = ''.join(content)
+        new_block = Block(previous_hash, timestamp, int(self.get_latest_block().index) + 1, content)
         self.add_block(new_block)
         self.ledger.add_block(new_block)
         print("New block created:\n" + str(new_block))
         return new_block
 
-
-
-
-    def select_block_creator(self):
-        total_stake = sum(self.stakeholders.values())
-        random_number = random.randint(1, total_stake)
-        stake_accumulator = 0
-
-        for stakeholder, stake in self.stakeholders.items():
-            stake_accumulator += stake
-            if stake_accumulator >= random_number:
-                return stakeholder
-
-    def get_stakeholder(self, creator):
-        if creator not in self.stakeholders:
-            self.stakeholders[creator] = random.randint(1, 100)
-        return self.stakeholders[creator]
 
 
 # Testing
@@ -67,7 +53,7 @@ if __name__ == "__main__":
     # Generate five blocks
     num_blocks = 5
     for i in range(num_blocks):
-        data = ["Transactvxczvxion 1", "Tranasdasdsction 2", "Transaeqweqwction 3", "Transactwqeqweion 2", "Transacqweqwtion 3", "Tranaasdasdction 2", "Transactio 3"]
+        data = ["Transaction 1", "Transaction 2", "Transaction 3", "Transaction 4", "Transaction 5", "Transaction 6", "Transaction 7"]
         random.shuffle(data)
         new_block = blockchain.generate_new_block(data)
         merkle_tree = new_block.view_merkle_tree()

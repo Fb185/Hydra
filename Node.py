@@ -4,6 +4,9 @@ import socket
 import threading
 import sys
 from Task import Task
+from Block import *
+from Blockchain import *
+import hashlib
 import random
 
 class Node():
@@ -18,6 +21,8 @@ class Node():
         self.stake = 0
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.bind(('127.0.0.1', self.port))
+        self.blockchain = Blockchain()
+        self.wallet = hashlib.sha256(str(self.port).encode()).hexdigest()
 
 
     # COMPONENTE DA REDE P2P
@@ -52,7 +57,8 @@ class Node():
         s.close()
 
     def listen(self):
-        counter = 0
+        node_who_completed_task = 0
+        nodes_rewarded = 0
         self.server_socket.listen()
         self.server_socket.settimeout(1)  # Set a timeout of 1 second
         while not self.closed:
@@ -66,30 +72,38 @@ class Node():
                 elif header == 'M:': # send message
                     print(f'\n{data}')
 
-                elif header == 'i:':
+                elif header == 'i:':  # idk what this is
                     self.global_task_id = int(data)
 
                 elif header == 'T:': # new task
                     task_obj = Task.from_string(data)
                     self.given_tasks.append(task_obj)
 
-                elif header == 'v:': # validator
+                elif header == 'v:': # give me your stake values so i can decide who's the validator
                     self.send_to_peer(self.stake, data)
 
                 elif header == 'w:': # work on task
                     print("got header w")
                     self.working_on_task()
 
-                elif header == 'R:': # reward
+                elif header == 'R:': # if you get this you can be rewared
                     self.balance = self.balance + int(data)
-                    print("got reward")
+                    self.got_reward()
 
-                elif header == 'c:':
-                    counter += 1
-                    print("[Node: ",counter,", status complete]")
-                    if counter == 4:
-                        counter = 0
+                elif header == 'c:':  #  this is what nodes send when they finish working on a task
+                    node_who_completed_task += 1
+                    print("[Node: ",node_who_completed_task,", status complete]")
+                    if node_who_completed_task == 4:
+                        node_who_completed_task = 0
                         self.reward()
+
+                elif header == 'p:': # this is sent from workers to validators to inform they have been payed
+                    print("got p:")
+                    print(nodes_rewarded)
+                    nodes_rewarded += 1
+                    if nodes_rewarded == 3:
+                        nodes_rewarded = 0
+                        self.create_block()
 
 
             except socket.timeout:
@@ -292,7 +306,7 @@ class Node():
             print(str(task))
 
     def get_balance(self):
-        print(f"\nYour balance is - {self.balance}")
+        print(f"Wallet [{self.wallet}]\nBalance: {self.balance}")
 
     def print_stake(self):
         print(f"\nYour stake is - {self.stake}")
@@ -315,3 +329,46 @@ class Node():
         self.closed = True
         self.server_socket.close()
         sys.exit()
+
+
+
+    def create_block(self):
+        validator = self.given_tasks[-1].validator
+        author = self.given_tasks[-1].author
+        task = self.given_tasks[-1]
+        peers = self.given_tasks[-1].assigned_nodes
+        tier = task.difficulty
+        transactions = []
+        data = [author, validator, task, peers, transactions]
+        if tier[0] == "Tier A":
+            transactions.append(f"1 token from {author} to {validator}")
+            for peer in peers:
+                transactions.append(f"1 token from {author} to {peer}")
+
+        if tier[0] == "Tier B":
+            transactions.append(f"2 token from {author} to {validator}")
+            for peer in peers:
+                transactions.append(f"2 token from {author} to {peer}")
+
+        if tier[0] == "Tier C":
+            transactions.append(f"3 token from {author} to {validator}")
+            for peer in peers:
+                transactions.append(f"3 token from {author} to {peer}")
+
+        self.blockchain.generate_new_block(data)
+        print(self.blockchain.get_blockchain())
+
+    def got_reward(self):
+        task = self.given_tasks[-1]
+        validator_peer = task.validator
+        if self.port != validator_peer:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect(('127.0.0.1', int(validator_peer)))
+            s.send(f'p:{""}'.encode('utf-8'))
+            print("got reward")
+            s.close()
+        else:
+            pass
+
+    def validate(self):
+        self.blockchain.validate_blockchain()

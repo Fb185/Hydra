@@ -8,10 +8,10 @@ class Block:
         self.index = index
         self.content = content
 
-
     def calculate_hash(self, content):
+        content_str = str(content)
         sha = hashlib.sha256()
-        sha.update(content.encode('utf-8'))
+        sha.update(content_str.encode('utf-8'))
         return sha.hexdigest()
 
     def build_merkle_tree(self, content):
