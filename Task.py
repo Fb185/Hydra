@@ -18,7 +18,7 @@ class Task():
         assigned_nodes = [int(node) if node != "None" else None for node in task_data[3].split(",")]
         complete = task_data[4] == "True"
         validator = task_data[5]
-        difficulty = task_data[6]
+        difficulty = task_data[7]
         task = Task(task_id, description, author, assigned_nodes, validator, difficulty)
         task.complete = complete
         return task

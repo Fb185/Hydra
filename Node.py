@@ -8,6 +8,7 @@ from Block import *
 from Blockchain import *
 import hashlib
 import random
+import pickle
 # from flask import Flask, render_template
 
 
@@ -69,7 +70,7 @@ class Node():
             try:
                 client_socket, addr = self.server_socket.accept()
                 header = client_socket.recv(2).decode('utf-8')
-                data = client_socket.recv(1024).decode('utf-8')
+                data = client_socket.recv(10000).decode('utf-8')
                 if header == 'P:': # connect to peer
                     self.peers.append(int(data))
                     threading.Thread(target=self.handle_peer, args=(client_socket,)).start()
@@ -109,10 +110,10 @@ class Node():
                         nodes_rewarded = 0
                         self.create_block()
 
-                elif header == 'b:':
-                    block = Block.from_string(data)
-                    print(block)
-                    self.validate(block)
+                elif header == 'x:':
+                    data = Block.from_string(data)
+                    print(data)
+                    self.validate(data)
 
                 elif header == 'o:':
                     successful_validations +=1
@@ -188,6 +189,7 @@ class Node():
                 self.my_tasks.append(new_task)
                 self.clear_screen()
                 time.sleep(11)
+                self.list_my_tasks()
             else:
                 print(f"Insufficient balance to purchase {tier['difficulty']}.")
                 return
@@ -199,7 +201,7 @@ class Node():
 
     def get_validator_peer(self, assigned_n):
 
-        validator_peer = 0
+        validator_peer = None
         max_stake = 0
 
         for peer in assigned_n:
@@ -293,7 +295,8 @@ class Node():
             _ = os.system('clear')
 
     def working_on_task(self):
-        self.clear_screen()
+        self.list_given_tasks()
+        # self.clear_screen()
         print("Working on task...", end='', flush=True)
 
         # Number of seconds for the timer
@@ -301,7 +304,7 @@ class Node():
         for _ in range(timer_duration):
             time.sleep(1)
             print(".", end='', flush=True)
-        self.clear_screen()
+        # self.clear_screen()
 
         author = self.given_tasks[-1].get_author()
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -354,9 +357,9 @@ class Node():
         task = self.given_tasks[-1]
         peers = self.given_tasks[-1].assigned_nodes
         tier = task.difficulty
+        print("tier: ", tier)
         transactions = []
         previous_hash = self.blockchain.get_latest_block().hash
-        data = [author, validator, task, peers, transactions, previous_hash]
         if tier[0] == "Tier A":
             transactions.append(f"1 token from {author} to {validator}")
             for peer in peers:
@@ -372,13 +375,18 @@ class Node():
             for peer in peers:
                 transactions.append(f"3 token from {author} to {peer}")
 
+        data = [author, validator, task, peers, transactions, previous_hash]
+        print("this is data:\n\n\n")
+        print(data)
         block = self.blockchain.generate_new_block(data)
         # print(self.blockchain.get_blockchain())
+        # dump = pickle.dumps(block)
+
         for peer in self.peers:
             if peer != self.port:
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.connect(('127.0.0.1', peer))
-                s.send(f'b:{block}'.encode('utf-8'))
+                s.send(f'x:{block}'.encode('utf-8'))
 
     def got_reward(self):
         task = self.given_tasks[-1]
@@ -393,9 +401,11 @@ class Node():
             pass
 
     def validate(self, block):
-        print(block.content)
+        # print(block.content)
         print(type(block.content))
-        if self.blockchain.get_latest_block().hash != block.hash:
+        print("this is hash of 1 ", self.blockchain.get_latest_block().hash, type(self.blockchain.get_latest_block().hash))
+        print("this is hash of 2", block.previous_hash, type(block.previous_hash))
+        if str(self.blockchain.get_latest_block().hash) != str(block.previous_hash):
             print("Validation failed")
         else:
             for peer in self.peers:

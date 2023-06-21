@@ -9,7 +9,9 @@ from Blockchain import *
 def main():
 
     port = 8000
+
     while True:
+        print(port)
         try:
             node = Node(port)
             break

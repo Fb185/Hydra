@@ -9,6 +9,10 @@ class Blockchain:
         # self.stakeholders = {}  # Dictionary to store stakeholders and their stakes
         # self.ledger = Ledger()
 
+    def create_genesis_block(self):
+        return Block(0,"0", "0", "Genesis Block")
+
+
     def get_latest_block(self):
         return self.chain[-1]
 
@@ -39,15 +43,14 @@ class Blockchain:
         return True
 
 
-    def create_genesis_block(self):
-        return Block("0", date.datetime.now(), "0", "Genesis Block")
 
 
     def generate_new_block(self, content):
-        timestamp = date.datetime.now()
+        # timestamp = date.datetime.now()
         previous_hash = self.get_latest_block().hash
         index =  int(self.get_latest_block().index) +1
-        new_block = Block(previous_hash, timestamp, index, content)
+        new_block = Block(previous_hash, 0, index, content)
+        new_block.calculate_hash()
         print("New block created:\n" + str(new_block))
         return new_block
 
