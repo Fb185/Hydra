@@ -1,37 +1,11 @@
+import flask
 from Node import *
 from tkinter import ttk
 import tkinter as tk
 from Blockchain import *
 
-"""
-def run_gui(node):
-    def on_task_select(event):
-        selected_task = task_listbox.get(task_listbox.curselection())
-        task_id = int(selected_task.split(':')[1])
-        for task in node.available_tasks:
-            if task.id == task_id:
-                task_info.delete(1.0, tk.END)
-                task_info.insert(tk.END, str(task))
-                break
-
-    root = tk.Tk()
-    root.title("Node Task Manager")
-
-    frame = ttk.Frame(root, padding="10")
-    frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
-
-    task_listbox = tk.Listbox(frame)
-    for task in node.available_tasks:
-        task_listbox.insert(tk.END, f"Task ID: {task.id}: {task.description}")
-    task_listbox.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
-    task_listbox.bind('<<ListboxSelect>>', on_task_select)
-
-    task_info = tk.Text(frame, wrap="word", width=40, height=10)
-    task_info.grid(row=0, column=1, padx=10, sticky=(tk.W, tk.E, tk.N, tk.S))
-
-    root.mainloop()
-"""
-
+# app = Flask(__name__)
+# @app.route("/")
 def main():
 
     port = 8000
@@ -49,6 +23,13 @@ def main():
     threading.Thread(target=node.listen).start()
 
 
+    # peers = node.get_peers()
+    # given_tasks = node.get_given_tasks()
+    # render_template("index.html", peers=peers, given_tasks=given_tasks)
+
+    # app.run()
+
+
     while True:
         command = input("\nTEMPORARY MENU\n\nCommand list:\n\nsend\nmake\nlistg\nlistm\nbalance\nstake\naddstake\n\n- ")
 
@@ -57,11 +38,11 @@ def main():
             node.send_message(f"\nNode {port}: {msg}")
 
         elif command == "make":
-            
+
             if len(node.peers) < 4:
                 print("\nNot enough connected nodes to create a task.")
                 continue  # Skip task creation if there are not enough connected nodes
-            else:   
+            else:
                 description = input("Enter a description ")
                 node.make_task(description)
 
@@ -79,6 +60,10 @@ def main():
 
         elif command == "addstake":
             node.add_stake()
+
+        elif command == "validate":
+            block = input("Enter what block you want to see: ")
+            blockchain.get_block(block)
 
 
         elif command == "e":

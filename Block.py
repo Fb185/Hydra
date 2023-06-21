@@ -1,12 +1,20 @@
 import hashlib
 
 class Block:
-    def __init__(self, previous_hash, timestamp, index, content):
+    def __init__(self, previous_hash, hash, timestamp, index, content):
         self.previous_hash = previous_hash
-        self.hash = self.build_merkle_tree(content)
+        self.hash = self.calculate_hash(content)
         self.timestamp = timestamp
         self.index = index
         self.content = content
+
+
+    @classmethod
+    def from_string(cls, block_string):
+        previous_hash, hash, timestamp, index, content = block_string.split(':')
+        return cls(previous_hash, hash, timestamp, index, content )
+
+
 
     def calculate_hash(self, content):
         content_str = str(content)
@@ -35,9 +43,9 @@ class Block:
 
 
     def view_merkle_tree(self):
-        return self.hash
+        return self.build_merkle_tree(self.content)
 
     def __str__(self):
-        return "Previous Hash: " + str(self.previous_hash) + "\nHash: " + str(self.hash) + "\nTimestamp: " + str(self.timestamp) + "\nIndex: " + str(self.index)
+        return  str(self.previous_hash) + ":" + str(self.hash) + ":" + str(self.timestamp) + ":" + str(self.index) + ":" + str(self.content)
 
 

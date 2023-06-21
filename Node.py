@@ -8,6 +8,10 @@ from Block import *
 from Blockchain import *
 import hashlib
 import random
+# from flask import Flask, render_template
+
+
+
 
 class Node():
     def __init__(self, port):
@@ -26,7 +30,6 @@ class Node():
 
 
     # COMPONENTE DA REDE P2P
-
 
     def handle_peer(self, client_socket):
         while True:
@@ -59,6 +62,7 @@ class Node():
     def listen(self):
         node_who_completed_task = 0
         nodes_rewarded = 0
+        successful_validations = 0
         self.server_socket.listen()
         self.server_socket.settimeout(1)  # Set a timeout of 1 second
         while not self.closed:
@@ -104,6 +108,17 @@ class Node():
                     if nodes_rewarded == 3:
                         nodes_rewarded = 0
                         self.create_block()
+
+                elif header == 'b:':
+                    block = Block.from_string(data)
+                    print(block)
+                    self.validate(block)
+
+                elif header == 'o:':
+                    successful_validations +=1
+                    if successful_validations == len(self.peers)-1:
+                        successful_validations = 0
+                        self.blockchain.add_block(data)
 
 
             except socket.timeout:
@@ -204,6 +219,7 @@ class Node():
                             validator_peer = peer
             except:
                 pass
+        print("validator in decision ", validator_peer)
         return validator_peer
 
     def reward(self):
@@ -333,13 +349,14 @@ class Node():
 
 
     def create_block(self):
-        validator = self.given_tasks[-1].validator
         author = self.given_tasks[-1].author
+        validator = self.given_tasks[-1].validator
         task = self.given_tasks[-1]
         peers = self.given_tasks[-1].assigned_nodes
         tier = task.difficulty
         transactions = []
-        data = [author, validator, task, peers, transactions]
+        previous_hash = self.blockchain.get_latest_block().hash
+        data = [author, validator, task, peers, transactions, previous_hash]
         if tier[0] == "Tier A":
             transactions.append(f"1 token from {author} to {validator}")
             for peer in peers:
@@ -355,8 +372,13 @@ class Node():
             for peer in peers:
                 transactions.append(f"3 token from {author} to {peer}")
 
-        self.blockchain.generate_new_block(data)
-        print(self.blockchain.get_blockchain())
+        block = self.blockchain.generate_new_block(data)
+        # print(self.blockchain.get_blockchain())
+        for peer in self.peers:
+            if peer != self.port:
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.connect(('127.0.0.1', peer))
+                s.send(f'b:{block}'.encode('utf-8'))
 
     def got_reward(self):
         task = self.given_tasks[-1]
@@ -370,5 +392,21 @@ class Node():
         else:
             pass
 
-    def validate(self):
-        self.blockchain.validate_blockchain()
+    def validate(self, block):
+        print(block.content)
+        print(type(block.content))
+        if self.blockchain.get_latest_block().hash != block.hash:
+            print("Validation failed")
+        else:
+            for peer in self.peers:
+                if peer != self.port:
+                    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    s.connect(('127.0.0.1', peer))
+                    s.send(f'o:{block}'.encode('utf-8'))
+            self.blockchain.validate_blockchain()
+            self.blockchain.add_block(block)
+            print("Validated successfully")
+
+
+
+

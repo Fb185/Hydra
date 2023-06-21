@@ -6,14 +6,26 @@ from ledger import Ledger
 class Blockchain:
     def __init__(self):
         self.chain = [self.create_genesis_block()]
-        self.stakeholders = {}  # Dictionary to store stakeholders and their stakes
-        self.ledger = Ledger()
+        # self.stakeholders = {}  # Dictionary to store stakeholders and their stakes
+        # self.ledger = Ledger()
 
     def get_latest_block(self):
         return self.chain[-1]
 
     def get_blockchain(self):
         return self.chain
+
+    def get_block(self, block):
+        block =  self.chain[block]
+        print(f"""
+            author: {block.author}
+            task: {block.task}
+            workers: {block.peers}
+            transactions: {block.transactions}
+            validator: {block.validator}
+            tier: {block.tier}
+            previous_hash: {block.previous_hash}
+              """)
 
     def add_block(self, new_block):
         self.chain.append(new_block)
@@ -28,7 +40,7 @@ class Blockchain:
 
 
     def create_genesis_block(self):
-        return Block(0, date.datetime.now(), "0", "Genesis Block")
+        return Block(0, date.datetime.now(), "0", "Genesis Block", "")
 
 
     def generate_new_block(self, content):
@@ -37,11 +49,12 @@ class Blockchain:
 
         # Select a block creator based on stake
         # content_str = ''.join(content)
-        new_block = Block(previous_hash, timestamp, int(self.get_latest_block().index) + 1, content)
-        self.add_block(new_block)
-        self.ledger.add_block(new_block)
+        hash = Block.build_merkle_tree(content, content)  # this is broken
+        index =  int(self.get_latest_block().index) +1
+        new_block = Block(previous_hash, hash, timestamp, index, content)
         print("New block created:\n" + str(new_block))
         return new_block
+
 
 
 
