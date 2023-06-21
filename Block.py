@@ -1,51 +1,66 @@
 import hashlib
 
 class Block:
-    def __init__(self, previous_hash, hash, timestamp, index, content):
+    def __init__(self, previous_hash, timestamp, index, content):
         self.previous_hash = previous_hash
-        self.hash = self.calculate_hash(content)
         self.timestamp = timestamp
         self.index = index
         self.content = content
+        self.hash = self.calculate_hash()
+
+
 
 
     @classmethod
     def from_string(cls, block_string):
-        previous_hash, hash, timestamp, index, content = block_string.split(':')
-        return cls(previous_hash, hash, timestamp, index, content )
+        previous_hash, timestamp, index, content, hash = block_string.split(':')
+        return cls(previous_hash, float(timestamp), int(index), content)
 
 
-
-    def calculate_hash(self, content):
-        content_str = str(content)
+    def calculate_hash(self):
         sha = hashlib.sha256()
-        sha.update(content_str.encode('utf-8'))
+        sha.update(str(self.previous_hash).encode('utf-8') +
+                   str(self.timestamp).encode('utf-8') +
+                   str(self.index).encode('utf-8') +
+                   str(self.content).encode('utf-8'))
         return sha.hexdigest()
 
-    def build_merkle_tree(self, content):
-        if len(content) == 1:
-            return [self.calculate_hash(content[0])]
 
-        # Recursive call to build left and right subtrees
-        left_subtree = self.build_merkle_tree(content[:len(content)//2])
-        right_subtree = self.build_merkle_tree(content[len(content)//2:])
-        # Combine left and right subtrees hashes
-        combined_hashes = left_subtree + right_subtree
-        # Calculate parent hashes by hashing the concatenation of left and right hashes
-        merkle_root = []
-        for i in range(0, len(combined_hashes), 2):
-            hash1 = combined_hashes[i]
-            hash2 = combined_hashes[i+1] if i+1 < len(combined_hashes) else combined_hashes[i]
-            parent_hash = self.calculate_hash(hash1 + hash2)
-            merkle_root.append(parent_hash)
+    # def build_merkle_tree(self, blocks):
+    #     self.merkle_tree = self._build_merkle_tree_recursive(blocks)
 
-        return merkle_root
+    # def _build_merkle_tree_recursive(self, blocks):
+    #     if len(blocks) == 1:
+    #         return blocks[0]
+
+    #     next_level = []
+    #     for i in range(0, len(blocks), 2):
+    #         block1 = blocks[i]
+    #         if i + 1 < len(blocks):
+    #             block2 = blocks[i + 1]
+    #             combined_hash = self.calculate_hash(block1.hash + block2.hash)
+    #             parent = Block('', 0, -1, combined_hash)
+    #             parent.left = block1
+    #             parent.right = block2
+    #             next_level.append(parent)
+    #         else:
+    #             next_level.append(block1)
+
+    #     return self._build_merkle_tree_recursive(next_level)
+
+    # def view_merkle_tree(self):
+    #     self._view_merkle_tree_recursive(self.merkle_tree, 0)
+
+    # def _view_merkle_tree_recursive(self, node, level):
+    #     if node is None:
+    #         return
+
+    #     indent = '    ' * level
+    #     print(indent + f"Level {level}: Hash = {node.hash}")
+    #     self._view_merkle_tree_recursive(node.left, level + 1)
+    #     self._view_merkle_tree_recursive(node.right, level + 1)
 
 
-    def view_merkle_tree(self):
-        return self.build_merkle_tree(self.content)
 
     def __str__(self):
-        return  str(self.previous_hash) + ":" + str(self.hash) + ":" + str(self.timestamp) + ":" + str(self.index) + ":" + str(self.content)
-
-
+        return f"previous hash: #{self.previous_hash} [hash: {self.hash}, time: {self.timestamp}, index: {self.index}, content: {self.content} ]"

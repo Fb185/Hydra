@@ -40,18 +40,14 @@ class Blockchain:
 
 
     def create_genesis_block(self):
-        return Block(0, date.datetime.now(), "0", "Genesis Block", "")
+        return Block("0", date.datetime.now(), "0", "Genesis Block")
 
 
     def generate_new_block(self, content):
         timestamp = date.datetime.now()
         previous_hash = self.get_latest_block().hash
-
-        # Select a block creator based on stake
-        # content_str = ''.join(content)
-        hash = Block.build_merkle_tree(content, content)  # this is broken
         index =  int(self.get_latest_block().index) +1
-        new_block = Block(previous_hash, hash, timestamp, index, content)
+        new_block = Block(previous_hash, timestamp, index, content)
         print("New block created:\n" + str(new_block))
         return new_block
 
@@ -61,16 +57,19 @@ class Blockchain:
 # Testing
 if __name__ == "__main__":
     blockchain = Blockchain()
-    print("blockchain: ", blockchain.get_latest_block())
+    # print("blockchain: ", blockchain.get_latest_block())
 
     # Generate five blocks
     num_blocks = 5
     for i in range(num_blocks):
+        # import pdb
+        # pdb.set_trace()
         data = ["Transaction 1", "Transaction 2", "Transaction 3", "Transaction 4", "Transaction 5", "Transaction 6", "Transaction 7"]
         random.shuffle(data)
         new_block = blockchain.generate_new_block(data)
-        merkle_tree = new_block.view_merkle_tree()
-        print("Merkle Tree:", merkle_tree)        # time.sleep(2)
+        blockchain.add_block(new_block)
+        # merkle_tree = new_block.view_merkle_tree()
+        # print("Merkle Tree:", merkle_tree)        # time.sleep(2)
 
     # Validate the blockchain
     is_valid = blockchain.validate_blockchain()
