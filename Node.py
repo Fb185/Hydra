@@ -11,7 +11,6 @@ import random
 
 
 
-
 class Node():
     def __init__(self, port):
         self.port = port
@@ -26,6 +25,8 @@ class Node():
         self.server_socket.bind(('127.0.0.1', self.port))
         self.blockchain = Blockchain()
         self.wallet = hashlib.sha256(str(self.port).encode()).hexdigest()
+        self.globa_validator = 0
+
 
 
     # COMPONENTE DA REDE P2P
@@ -57,6 +58,7 @@ class Node():
     def send_to_peer(self, msg, peer):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect(('127.0.0.1', int(peer)))
+        msg = str(msg) +":"+ str(self.port)
         s.send(f'r:{msg}'.encode('utf-8'))
         s.close()
 
@@ -65,6 +67,7 @@ class Node():
         node_who_completed_task = 0
         nodes_rewarded = 0
         reply = 0
+        stakes = []
         successful_validations = 0
         self.server_socket.listen()
         self.server_socket.settimeout(1)  # Set a timeout of 1 second
@@ -119,7 +122,6 @@ class Node():
                     data = Block.from_string(data)
                     print(data)
                     self.validate(data)
-                    break
 
                 elif header == 'o:':
                     successful_validations +=1
@@ -127,14 +129,31 @@ class Node():
                         successful_validations = 0
                         self.blockchain.add_block(Block.from_string(data))
                         self.clear_screen()
-                        break
 
+                elif header == 'r:':
+                    reply +=1
+                    data = data.split(":")
+                    stakes.append(data)
+                    print(stakes)
+                    current_peer = 0
+                    for peer in stakes:
+                        print(peer[0])
+                        print(peer[1])
+                        print(type(int(peer[0])))
+                        if int(peer[0]) > int(current_peer):
+                            current_peer = peer[1]
+                            # current_stake = peer[0]
+                            print("current peer: ",current_peer)
+                    self.globa_validator = int(current_peer)
+                    print(self.globa_validator)
 
 
             except socket.timeout:
                 continue  # If the timeout occurs, just continue the loop
             except OSError as e:
                 break  # If the server socket is closed, break the loop
+
+
 
     def connect_to_peers(self):
         for i in range(8000, self.port):
@@ -177,8 +196,14 @@ class Node():
                 # assigns the validator based on who has the most staked coin from assigned_n
 
                 print("[Setting validator]")
-                validator_peer = self.get_validator_peer(assigned_n)
-                if validator_peer != None:
+                self.send_validator_header(assigned_n)
+                # validator_peer = self.get_validator_peer()
+                # validator_peer = 8000
+                time.sleep(1)
+                validator_peer = self.globa_validator
+                print("validator peer after global ", validator_peer)
+                print(validator_peer)
+                if validator_peer != 0:
                     print("[Validator set]")
                     time.sleep(1)
                     new_task = Task(self.global_task_id, description, self.port, assigned_n, validator_peer, tier)
@@ -199,7 +224,6 @@ class Node():
                     self.my_tasks.append(new_task)
                     self.clear_screen()
                     time.sleep(11)
-                    self.list_my_tasks()
                 else:
                     print("Failed getting validator... try again.")
             else:
@@ -210,40 +234,21 @@ class Node():
             return None
 
 
+    def get_validator_peer(self, validator):
+        return int(validator)
 
-    def get_validator_peer(self, assigned_n):
-
+    def send_validator_header(self, assigned_n):
+        peer = None
         validator_peer = None
         max_stake = 0
 
-        for peer in assigned_n:
+        for current_peer in assigned_n:
+            peer = current_peer
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect(('127.0.0.1', peer))
             s.send(f'v:{self.port}'.encode('utf-8'))
-        while validator_peer == None:
-            peer = 0
-                # self.server_socket.listen()
-                serv = self.server_socket
-                serv.listen()
-                try:
-                    # while not self.closed:
-                    client_socket, addr = self.server_socket.accept()
-                    header = client_socket.recv(2).decode('utf-8')
-                    data = client_socket.recv(1024).decode('utf-8')
-                    if header == 'r:':
-                        print("got response from ", peer)
-                        stake = int(data)
-                        print(stake)
-                        if stake > max_stake:
-                            max_stake = stake
-                            validator_peer = peer
-                            print(validator_peer)
-                except:
-                    pass
-                serv.close()
-
-            print("validator in decision ", validator_peer)
-            return validator_peer
+        print("validator in decision ", self.globa_validator)
+        # return validator_peer
 
 
     def reward(self):
@@ -259,36 +264,40 @@ class Node():
                 if tier["difficulty"] == "Tier A":
                     s.send(f'R:{1}'.encode('utf-8'))
                     print("giving reward")
+                    s.close()
 
                 if tier["difficulty"] == "Tier B":
                     s.send(f'R:{2}'.encode('utf-8'))
                     print("giving reward")
+                    s.close()
 
                 if tier["difficulty"] == "Tier C":
                     s.send(f'R:{3}'.encode('utf-8'))
                     print("giving reward")
+                    s.close()
 
-                s.close()
             except Exception as e:
                 print("something went wrong with rewards\n", e)
 
         try:
-            print("validator ", validator_peer)
+            print("validator in reward ", validator_peer)
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect(('127.0.0.1', validator_peer))
             if tier["difficulty"] == "Tier A":
                 print("giving reward")
                 s.send(f'R:{1}'.encode('utf-8'))
+                s.close()
 
             if tier["difficulty"] == "Tier B":
                 s.send(f'R:{2}'.encode('utf-8'))
                 print("giving reward")
+                s.close()
 
             if tier["difficulty"] == "Tier C":
                 s.send(f'R:{3}'.encode('utf-8'))
                 print("giving reward")
+                s.close()
 
-            s.close()
         except Exception as e:
             print(e)
 
@@ -317,7 +326,7 @@ class Node():
             _ = os.system('clear')
 
     def working_on_task(self):
-        self.list_given_tasks()
+        # self.list_given_tasks()
         self.clear_screen()
         print("Working on task...", end='', flush=True)
 

@@ -1,0 +1,18 @@
+This project makes use of a mesh styled P2P network.
+Due to the fact that implementing this architecture using real IP addresses would be
+very time consuming and would go out of the scope of our project we decided to
+adapt our model to run on our loopback IP address (127.0.0.1) with our different nodes
+connecting through different port numbers starting on 8000 onwards. We chose this number
+because it's out of the known ports range used for most commun services required by our
+machines.
+Given that that this network must be decentralized, in accordance to web3 technology,
+our nodes must serve as both clients and servers, meaning they will be sending eachother
+information, and in turn will simultaneously be listening for their peer's messages.
+We decided that the way we wanted to organize information sent from each node would be to
+add a prefix header in the beginning of each message. This header has only two characters,
+a letter followed by a semi-colon. This way we were able to implement logic and algorithms
+depending on the header that was recieved.
+We can see on figure (add figure number) that all nodes both send and recieve these messages
+with appropriate headers.
+
+
