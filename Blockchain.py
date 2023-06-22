@@ -12,6 +12,8 @@ class Blockchain:
     def create_genesis_block(self):
         return Block(0,"0", "0", "Genesis Block")
 
+    def get_blockchain_height(self):
+        return len(self.chain)
 
     def get_latest_block(self):
         return self.chain[-1]
@@ -22,13 +24,10 @@ class Blockchain:
     def get_block(self, block):
         block =  self.chain[block]
         print(f"""
-            author: {block.author}
-            task: {block.task}
-            workers: {block.peers}
-            transactions: {block.transactions}
-            validator: {block.validator}
-            tier: {block.tier}
-            previous_hash: {block.previous_hash}
+            previous hash: {block.previous_hash}
+            hash: {block.hash}
+            index: {block.index}
+            content: {block.content}
               """)
 
     def add_block(self, new_block):

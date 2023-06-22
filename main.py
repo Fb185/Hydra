@@ -67,6 +67,11 @@ def main():
             block = input("Enter what block you want to see: ")
             blockchain.get_block(block)
 
+        elif command =="show":
+            node.view_blockchain()
+
+
+
 
         elif command == "e":
             node.send_message(f"\nNode {port} has disconnected from the network.")

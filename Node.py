@@ -8,8 +8,6 @@ from Block import *
 from Blockchain import *
 import hashlib
 import random
-import pickle
-# from flask import Flask, render_template
 
 
 
@@ -109,17 +107,21 @@ class Node():
                     if nodes_rewarded == 3:
                         nodes_rewarded = 0
                         self.create_block()
+                        break
 
-                elif header == 'x:':
+                elif header == 'b:':
                     data = Block.from_string(data)
                     print(data)
                     self.validate(data)
+                    break
 
                 elif header == 'o:':
                     successful_validations +=1
                     if successful_validations == len(self.peers)-1:
                         successful_validations = 0
-                        self.blockchain.add_block(data)
+                        self.blockchain.add_block(Block.from_string(data))
+                        self.clear_screen()
+                        break
 
 
             except socket.timeout:
@@ -169,27 +171,30 @@ class Node():
 
                 print("[Setting validator]")
                 validator_peer = self.get_validator_peer(assigned_n)
-                print("[Validator set]")
-                time.sleep(1)
-                new_task = Task(self.global_task_id, description, self.port, assigned_n, validator_peer, tier)
-                self.global_task_id += 1
-                new_task.assigned_nodes = assigned_n
-                # Send the task information to the assigned nodes
-                for peer in assigned_n:
-                    try:
-                        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                        s.connect(('127.0.0.1', peer))
-                        task_str = f"{new_task.id}:{new_task.description}:{new_task.author}:{','.join(str(node) for node in new_task.assigned_nodes)}:{new_task.complete}:{new_task.validator}:{new_task.difficulty}"
-                        s.send(f'T:{task_str}'.encode('utf-8'))
-                        s.send(f'i:{self.global_task_id}'.encode('utf-8'))
-                        s.close()
-                    except Exception as e:
-                        pass
-                self.notify_assigned_nodes(assigned_n)
-                self.my_tasks.append(new_task)
-                self.clear_screen()
-                time.sleep(11)
-                self.list_my_tasks()
+                if validator_peer != None:
+                    print("[Validator set]")
+                    time.sleep(1)
+                    new_task = Task(self.global_task_id, description, self.port, assigned_n, validator_peer, tier)
+                    self.global_task_id += 1
+                    new_task.assigned_nodes = assigned_n
+                    # Send the task information to the assigned nodes
+                    for peer in assigned_n:
+                        try:
+                            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                            s.connect(('127.0.0.1', peer))
+                            task_str = f"{new_task.id}:{new_task.description}:{new_task.author}:{','.join(str(node) for node in new_task.assigned_nodes)}:{new_task.complete}:{new_task.validator}:{new_task.difficulty}"
+                            s.send(f'T:{task_str}'.encode('utf-8'))
+                            s.send(f'i:{self.global_task_id}'.encode('utf-8'))
+                            s.close()
+                        except Exception as e:
+                            pass
+                    self.notify_assigned_nodes(assigned_n)
+                    self.my_tasks.append(new_task)
+                    self.clear_screen()
+                    time.sleep(11)
+                    self.list_my_tasks()
+                else:
+                    print("Failed getting validator... try again.")
             else:
                 print(f"Insufficient balance to purchase {tier['difficulty']}.")
                 return
@@ -204,25 +209,31 @@ class Node():
         validator_peer = None
         max_stake = 0
 
-        for peer in assigned_n:
-            try:
+        while validator_peer == None:
+            for peer in assigned_n:
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.connect(('127.0.0.1', peer))
                 s.send(f'v:{self.port}'.encode('utf-8'))
                 self.server_socket.listen()
-                while not self.closed:
-                    client_socket, addr = self.server_socket.accept()
-                    header = client_socket.recv(2).decode('utf-8')
-                    data = client_socket.recv(1024).decode('utf-8')
-                    if header == 'r:':
-                        stake = int(data)
-                        if stake > max_stake:
-                            max_stake = stake
-                            validator_peer = peer
-            except:
-                pass
-        print("validator in decision ", validator_peer)
-        return validator_peer
+                try:
+                    while not self.closed:
+                        client_socket, addr = self.server_socket.accept()
+                        header = client_socket.recv(2).decode('utf-8')
+                        data = client_socket.recv(1024).decode('utf-8')
+                        if header == 'r:':
+                            print("got response from ", peer)
+                            stake = int(data)
+                            print(stake)
+                            if stake > max_stake:
+                                max_stake = stake
+                                validator_peer = peer
+                                print(validator_peer)
+                except:
+                    pass
+                s.close()
+
+            print("validator in decision ", validator_peer)
+            return validator_peer
 
     def reward(self):
         task = self.my_tasks[-1]
@@ -296,7 +307,7 @@ class Node():
 
     def working_on_task(self):
         self.list_given_tasks()
-        # self.clear_screen()
+        self.clear_screen()
         print("Working on task...", end='', flush=True)
 
         # Number of seconds for the timer
@@ -304,7 +315,7 @@ class Node():
         for _ in range(timer_duration):
             time.sleep(1)
             print(".", end='', flush=True)
-        # self.clear_screen()
+        self.clear_screen()
 
         author = self.given_tasks[-1].get_author()
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -357,36 +368,33 @@ class Node():
         task = self.given_tasks[-1]
         peers = self.given_tasks[-1].assigned_nodes
         tier = task.difficulty
-        print("tier: ", tier)
         transactions = []
         previous_hash = self.blockchain.get_latest_block().hash
-        if tier[0] == "Tier A":
+        if tier == " 'Tier A', 'price'":
             transactions.append(f"1 token from {author} to {validator}")
             for peer in peers:
                 transactions.append(f"1 token from {author} to {peer}")
 
-        if tier[0] == "Tier B":
+        if tier == " 'Tier B', 'price'":
             transactions.append(f"2 token from {author} to {validator}")
             for peer in peers:
                 transactions.append(f"2 token from {author} to {peer}")
 
-        if tier[0] == "Tier C":
+        if tier == " 'Tier C', 'price'":
             transactions.append(f"3 token from {author} to {validator}")
             for peer in peers:
                 transactions.append(f"3 token from {author} to {peer}")
 
         data = [author, validator, task, peers, transactions, previous_hash]
-        print("this is data:\n\n\n")
-        print(data)
         block = self.blockchain.generate_new_block(data)
-        # print(self.blockchain.get_blockchain())
-        # dump = pickle.dumps(block)
+        self.clear_screen()
 
         for peer in self.peers:
             if peer != self.port:
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.connect(('127.0.0.1', peer))
-                s.send(f'x:{block}'.encode('utf-8'))
+                s.send(f'b:{block}'.encode('utf-8'))
+                s.close()
 
     def got_reward(self):
         task = self.given_tasks[-1]
@@ -402,21 +410,37 @@ class Node():
 
     def validate(self, block):
         # print(block.content)
-        print(type(block.content))
-        print("this is hash of 1 ", self.blockchain.get_latest_block().hash, type(self.blockchain.get_latest_block().hash))
-        print("this is hash of 2", block.previous_hash, type(block.previous_hash))
         if str(self.blockchain.get_latest_block().hash) != str(block.previous_hash):
             print("Validation failed")
         else:
-            for peer in self.peers:
-                if peer != self.port:
-                    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    s.connect(('127.0.0.1', peer))
-                    s.send(f'o:{block}'.encode('utf-8'))
-            self.blockchain.validate_blockchain()
-            self.blockchain.add_block(block)
-            print("Validated successfully")
+            try:
+                task = self.given_tasks[-1]
+                validator_peer = task.validator
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.connect(('127.0.0.1', int(validator_peer)))
+                s.send(f'o:{block}'.encode('utf-8'))
+                s.close()
+                self.blockchain.validate_blockchain()
+                self.blockchain.add_block(block)
+                self.clear_screen()
+                print("Validated successfully")
+            except:
+                task = self.my_tasks[-1]
+                validator_peer = task.validator
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.connect(('127.0.0.1', int(validator_peer)))
+                s.send(f'o:{block}'.encode('utf-8'))
+                s.close()
+                self.blockchain.validate_blockchain()
+                self.blockchain.add_block(block)
+                self.clear_screen()
+                print("Validated successfully")
 
+
+    def view_blockchain(self):
+        print(self.blockchain.get_latest_block())
+        # for block in range(self.blockchain.get_blockchain_height()):
+        #     print(self.blockchain.get_block(block))
 
 
 
