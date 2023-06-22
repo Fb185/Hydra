@@ -52,15 +52,19 @@ class Node():
             except Exception as e:
                 pass
 
+
+
     def send_to_peer(self, msg, peer):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect(('127.0.0.1', int(peer)))
         s.send(f'r:{msg}'.encode('utf-8'))
         s.close()
 
+
     def listen(self):
         node_who_completed_task = 0
         nodes_rewarded = 0
+        reply = 0
         successful_validations = 0
         self.server_socket.listen()
         self.server_socket.settimeout(1)  # Set a timeout of 1 second
@@ -83,6 +87,8 @@ class Node():
                     self.given_tasks.append(task_obj)
 
                 elif header == 'v:': # give me your stake values so i can decide who's the validator
+                    print("i got header v")
+                    print("data is ", data, type(data))
                     self.send_to_peer(self.stake, data)
 
                 elif header == 'w:': # work on task
@@ -122,6 +128,7 @@ class Node():
                         self.blockchain.add_block(Block.from_string(data))
                         self.clear_screen()
                         break
+
 
 
             except socket.timeout:
@@ -209,31 +216,35 @@ class Node():
         validator_peer = None
         max_stake = 0
 
+        for peer in assigned_n:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect(('127.0.0.1', peer))
+            s.send(f'v:{self.port}'.encode('utf-8'))
         while validator_peer == None:
-            for peer in assigned_n:
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.connect(('127.0.0.1', peer))
-                s.send(f'v:{self.port}'.encode('utf-8'))
-                self.server_socket.listen()
+            peer = 0
+                # self.server_socket.listen()
+                serv = self.server_socket
+                serv.listen()
                 try:
-                    while not self.closed:
-                        client_socket, addr = self.server_socket.accept()
-                        header = client_socket.recv(2).decode('utf-8')
-                        data = client_socket.recv(1024).decode('utf-8')
-                        if header == 'r:':
-                            print("got response from ", peer)
-                            stake = int(data)
-                            print(stake)
-                            if stake > max_stake:
-                                max_stake = stake
-                                validator_peer = peer
-                                print(validator_peer)
+                    # while not self.closed:
+                    client_socket, addr = self.server_socket.accept()
+                    header = client_socket.recv(2).decode('utf-8')
+                    data = client_socket.recv(1024).decode('utf-8')
+                    if header == 'r:':
+                        print("got response from ", peer)
+                        stake = int(data)
+                        print(stake)
+                        if stake > max_stake:
+                            max_stake = stake
+                            validator_peer = peer
+                            print(validator_peer)
                 except:
                     pass
-                s.close()
+                serv.close()
 
             print("validator in decision ", validator_peer)
             return validator_peer
+
 
     def reward(self):
         task = self.my_tasks[-1]
@@ -438,9 +449,9 @@ class Node():
 
 
     def view_blockchain(self):
-        print(self.blockchain.get_latest_block())
-        # for block in range(self.blockchain.get_blockchain_height()):
-        #     print(self.blockchain.get_block(block))
+        # print(self.blockchain.get_latest_block())
+        for block in range(self.blockchain.get_blockchain_height()):
+            print(self.blockchain.get_block(block))
 
 
 
