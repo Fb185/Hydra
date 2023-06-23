@@ -1,7 +1,4 @@
-import flask
 from Node import *
-from tkinter import ttk
-import tkinter as tk
 from Blockchain import *
 
 # app = Flask(__name__)
