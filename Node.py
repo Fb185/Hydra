@@ -416,7 +416,34 @@ class Node():
             for peer in peers:
                 transactions.append(f"3 token from {author} to {peer}")
 
-        data = [author, validator, task, peers, transactions, previous_hash]
+        # def calculate_hash(transactions):
+        #     # Calculate the hash of concatenated transactions
+        #     concatenated = ''.join(transactions).encode()
+        #     return hashlib.sha256(concatenated).hexdigest()
+
+        def calculate_hash(transactions):
+            # Convert each transaction to a string and calculate the hash of the concatenated transactions
+            concatenated = ''.join(str(t) for t in transactions).encode()
+            return hashlib.sha256(concatenated).hexdigest()
+
+        transaction_hashes = []
+        for transaction in transactions:
+            transaction_hashes.append(calculate_hash([transaction]))
+
+        while len(transaction_hashes) > 1:
+            new_hashes = []
+            for i in range(0, len(transaction_hashes), 2):
+                pair = transaction_hashes[i:i+2]
+                concatenated = ''.join(pair).encode()
+                new_hash = calculate_hash(concatenated)
+                new_hashes.append(new_hash)
+            transaction_hashes = new_hashes
+
+        merkle_root = transaction_hashes[0]
+
+
+
+        data = [author, validator, task, peers, transactions, previous_hash, merkle_root]
         block = self.blockchain.generate_new_block(data)
         self.clear_screen()
 
