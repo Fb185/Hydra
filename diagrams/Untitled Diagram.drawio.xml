@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2023-06-20T23:07:54.730Z" agent="Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/114.0" etag="HqKI9Fw9r1Delq8jP1F9" version="21.5.0">
+  <diagram name="Page-1" id="YX7Cy-MdGiWS2nJic1Ps">
+    <mxGraphModel dx="763" dy="459" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="VynEXUlip9innl9jk6mp-1" value="&lt;div&gt;Requestor&lt;/div&gt;" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="80" y="40" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-2" value="&lt;div&gt;Worker&lt;/div&gt;" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="410" y="40" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-3" value="Validator" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="680" y="290" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-5" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="120" y="80" as="sourcePoint" />
+            <mxPoint x="380" y="80" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-6" value="Task string [header T:]" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="175" y="210" width="140" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-7" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="120" y="250" as="sourcePoint" />
+            <mxPoint x="380" y="250" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-8" value="How much do you have staked?&lt;br&gt;[header v:]" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="150" y="30" width="190" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-9" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="380" y="160" as="sourcePoint" />
+            <mxPoint x="120" y="160" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-10" value="Return stake [header r:]" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="170" y="130" width="150" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-11" value="logic for validator" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;rotation=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="170" width="80" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-13" value="Requestor gets locked untill all nodes have completed the task" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="20" y="270" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-15" value="Worker" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="410" y="290" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-16" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="120" y="350" as="sourcePoint" />
+            <mxPoint x="380" y="350" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-17" value="Start work [header w:]" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="175" y="305" width="140" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-18" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="460" y="320" as="sourcePoint" />
+            <mxPoint x="660" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-19" value="task completed [header c:]" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="480" y="275" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-20" value="If 3 headers are recieved then:" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="680" y="380" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-21" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="650" y="400" as="sourcePoint" />
+            <mxPoint x="460" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-22" value="allow reward [header R:]" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="490" y="360" width="140" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-23" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="465" y="480" as="sourcePoint" />
+            <mxPoint x="645" y="480" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-24" value="I got the reward [header p:]" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="470" y="440" width="170" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-27" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="VynEXUlip9innl9jk6mp-25">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="720" y="550" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-25" value="If 3 headers are recieved then:" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="670" y="470" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-30" value="Validate blockchain" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="660" y="550" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-31" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="640" y="570" as="sourcePoint" />
+            <mxPoint x="460" y="570" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-32" value="Send block [header b:]" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="480" y="520" width="140" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-33" value="check block validity" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="320" y="545" width="125" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-34" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="450" y="680" as="sourcePoint" />
+            <mxPoint x="660" y="680" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-35" value="Is valid [header o:]" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="490" y="640" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-37" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="VynEXUlip9innl9jk6mp-36" target="VynEXUlip9innl9jk6mp-33">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-36" value="All nodes" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="240" y="540" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-41" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="VynEXUlip9innl9jk6mp-40" target="VynEXUlip9innl9jk6mp-42">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="725" y="740" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-40" value="if all nodes agree" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="670" y="640" width="110" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="VynEXUlip9innl9jk6mp-42" value="Create block" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="662.5" y="750" width="125" height="60" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
