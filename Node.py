@@ -12,7 +12,8 @@ import random
 
 
 class Node():
-    def __init__(self, port):
+    def __init__(self, port, gui=None):
+        self.gui = gui
         self.port = port
         self.peers = []
         self.closed = False
@@ -23,10 +24,11 @@ class Node():
         self.stake = 0
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.bind(('127.0.0.1', self.port))
+        # print(self.server_socket)
         self.blockchain = Blockchain()
         self.wallet = hashlib.sha256(str(self.port).encode()).hexdigest()
         self.globa_validator = 0
-
+        threading.Thread(target=self.listen).start()
 
 
     # COMPONENTE DA REDE P2P
@@ -62,6 +64,12 @@ class Node():
         s.send(f'r:{msg}'.encode('utf-8'))
         s.close()
 
+    def show_peers(self):
+        peers = []
+        for _ in self.peers:
+            peers.append(_)
+        return peers
+
 
     def listen(self):
         node_who_completed_task = 0
@@ -73,13 +81,19 @@ class Node():
         while not self.closed:
             try:
                 client_socket, addr = self.server_socket.accept()
+                # print(self.server_socket)
+                # print("client_socket: ", client_socket)
+                # print("myaddr: ", addr)
                 header = client_socket.recv(2).decode('utf-8')
                 data = client_socket.recv(10000).decode('utf-8')
                 if header == 'P:': # connect to peer
                     self.peers.append(int(data))
                     threading.Thread(target=self.handle_peer, args=(client_socket,)).start()
                 elif header == 'M:': # send message
-                    print(f'\n{data}')
+                    if self.gui:
+                        self.gui.add_message(data)
+                    else:
+                        print(f'\n{data}')
 
                 elif header == 'i:':  # idk what this is
                     self.global_task_id = int(data)
@@ -89,7 +103,7 @@ class Node():
                     self.given_tasks.append(task_obj)
 
                 elif header == 'v:': # give me your stake values so i can decide who's the validator
-                    # print("i got header v")
+                    print("i got header v")
                     # print("data is ", data, type(data))
                     self.send_to_peer(self.stake, data)
 
@@ -139,7 +153,7 @@ class Node():
                     for peer in stakes:
                         # print(peer[0])
                         # print(peer[1])
-                        # print(type(int(peer[0])))
+                        # print(type(int(peer[0])))8.1.65:3533
                         if int(peer[0]) > int(current_peer):
                             current_peer = peer[1]
                             print(current_peer)
@@ -156,7 +170,7 @@ class Node():
 
 
             except socket.timeout:
-                continue  # If the timeout occurs, just continue the loop
+                continue
             except OSError as e:
                 break  # If the server socket is closed, break the loop
 
@@ -170,11 +184,13 @@ class Node():
 
     def connect_to_peers(self):
         for i in range(8000, self.port):
+            print(i)
             try:
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.settimeout(1/2)  # Add a timeout to the socket
                 s.connect(('127.0.0.1', i))
                 s.send(f'P:{self.port}'.encode('utf-8'))
+                print("s",s, "afinet",socket.AF_INET, socket.SOCK_STREAM)
                 self.peers.append(i)
                 threading.Thread(target=self.handle_peer, args=(s,)).start()
             except Exception as e:
@@ -184,6 +200,9 @@ class Node():
     #COMPONENTE DAS TASKS
 
     def make_task(self, description):
+        if self.gui:
+            self.gui.make_task(description)
+
         menu = {
             "1": {"difficulty": "Tier A", "price": 5},
             "2": {"difficulty": "Tier B", "price": 10},
@@ -245,11 +264,12 @@ class Node():
             return None
 
 
-    def get_validator_peer(self, validator):
-        return int(validator)
+    # def get_validator_peer(self, validator):
+    #     return int(validator)
 
     def send_validator_header(self, assigned_n):
 
+        print("assigned nodes: ", assigned_n)
         for current_peer in assigned_n:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             peer = current_peer
@@ -335,6 +355,7 @@ class Node():
             _ = os.system('clear')
 
     def working_on_task(self):
+
         # self.list_given_tasks()
         self.clear_screen()
         print("Working on task...", end='', flush=True)
@@ -344,7 +365,7 @@ class Node():
         for _ in range(timer_duration):
             time.sleep(1)
             print(".", end='', flush=True)
-        self.clear_screen()
+        # self.clear_screen()
 
         author = self.given_tasks[-1].get_author()
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -358,16 +379,22 @@ class Node():
         return None
 
     def list_given_tasks(self):
+        tasks = []
         for task in self.given_tasks:
             print(task)
-            # print(str(task))
+            tasks.append(task)
+        return tasks
 
     def list_my_tasks(self):
+        tasks = []
         for task in self.my_tasks:
             print(str(task))
+            tasks.append(task)
+        return tasks
 
     def get_balance(self):
         print(f"Wallet [{self.wallet}]\nBalance: {self.balance}")
+        return self.wallet, self.balance
 
     def print_stake(self):
         print(f"\nYour stake is - {self.stake}")
@@ -379,10 +406,8 @@ class Node():
         self.balance += amount
         print(f"\nBalance of {self.port} updated to {self.balance}")
 
-    def add_stake(self):
-
-        amount = int(input("How many tokens: "))
-        self.stake += amount
+    def add_stake(self, amount):
+        self.stake += int(amount)
         self.balance = self.balance - self.stake
 
     def exit(self):
