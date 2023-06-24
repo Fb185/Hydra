@@ -109,18 +109,29 @@ class Node():
 
                 elif header == 'w:': # work on task
                     # print("got header w")
-                    self.working_on_task()
+                    if self.gui:
+                        self.gui.working_on_task()
+                    else:
+                        self.working_on_task()
 
                 elif header == 'R:': # if you get this you can be rewared
                     self.balance = self.balance + int(data)
                     self.got_reward()
 
                 elif header == 'c:':  #  this is what nodes send when they finish working on a task
-                    node_who_completed_task += 1
-                    print("[Node: ",node_who_completed_task,", status complete]")
-                    if node_who_completed_task == 4:
-                        node_who_completed_task = 0
-                        self.reward()
+                    if self.gui:
+                        self.gui.add_message(data)
+                        node_who_completed_task += 1
+                        print("[Node: ",node_who_completed_task,", status complete]")
+                        if node_who_completed_task == 4:
+                            node_who_completed_task = 0
+                            self.reward()
+                    else:
+                        node_who_completed_task += 1
+                        print("[Node: ",node_who_completed_task,", status complete]")
+                        if node_who_completed_task == 4:
+                            node_who_completed_task = 0
+                            self.reward()
 
                 elif header == 'p:': # this is sent from workers to validators to inform they have been payed
                     # print("got p:")
@@ -190,7 +201,6 @@ class Node():
                 s.settimeout(1/2)  # Add a timeout to the socket
                 s.connect(('127.0.0.1', i))
                 s.send(f'P:{self.port}'.encode('utf-8'))
-                print("s",s, "afinet",socket.AF_INET, socket.SOCK_STREAM)
                 self.peers.append(i)
                 threading.Thread(target=self.handle_peer, args=(s,)).start()
             except Exception as e:
@@ -199,70 +209,107 @@ class Node():
 
     #COMPONENTE DAS TASKS
 
-    def make_task(self, description):
+    def make_task(self, description, selection):
         if self.gui:
-            self.gui.make_task(description)
+            self.continue_gui_task(description, selection)
 
-        menu = {
-            "1": {"difficulty": "Tier A", "price": 5},
-            "2": {"difficulty": "Tier B", "price": 10},
-            "3": {"difficulty": "Tier C", "price": 15}
-        }
-
-        print("""
-        Welcome to the Menu:
-        Please select an option:
-        1. Tier A - $5
-        2. Tier B - $10
-        3. Tier C - $15
-        """)
-
-        selected_option = input("Option: ")
-        if selected_option in menu:
-            tier = menu[selected_option]
-            if self.balance >= tier["price"]:
-                self.balance -= tier["price"]
-                print(f"{tier['difficulty']} purchased successfully!")
-                assigned_n = random.sample([peer for peer in self.peers if peer != self.port], k=4)
-
-                # assigns the validator based on who has the most staked coin from assigned_n
-
-                print("[Setting validator]")
-                self.send_validator_header(assigned_n)
-                time.sleep(1)
-                validator_peer = self.globa_validator
-                # print("validator peer after global ", validator_peer)
-                print(validator_peer)
-                if validator_peer != 0:
-                    print("[Validator set]")
-                    time.sleep(1)
-                    new_task = Task(self.global_task_id, description, self.port, assigned_n, validator_peer, tier)
-                    self.global_task_id += 1
-                    new_task.assigned_nodes = assigned_n
-                    # Send the task information to the assigned nodes
-                    for peer in assigned_n:
-                        try:
-                            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                            s.connect(('127.0.0.1', peer))
-                            task_str = f"{new_task.id}:{new_task.description}:{new_task.author}:{','.join(str(node) for node in new_task.assigned_nodes)}:{new_task.complete}:{new_task.validator}:{new_task.difficulty}"
-                            s.send(f'T:{task_str}'.encode('utf-8'))
-                            s.send(f'i:{self.global_task_id}'.encode('utf-8'))
-                            s.close()
-                        except Exception as e:
-                            pass
-                    self.notify_assigned_nodes(assigned_n)
-                    self.my_tasks.append(new_task)
-                    self.clear_screen()
-                    time.sleep(11)
-                else:
-                    print("Failed getting validator... try again.")
-            else:
-                print(f"Insufficient balance to purchase {tier['difficulty']}.")
-                return
         else:
-            print("Invalid option selected.")
-            return None
+            self.continue_cli_task(description, selection)
 
+    def continue_gui_task(self, description, selection):
+        tier = selection
+        if self.balance >= selection:
+            self.balance -= selection
+            # print(f"{tier['difficulty']} purchased successfully!")
+            self.gui.add_message("purchased successfully!")
+
+            assigned_n = random.sample([peer for peer in self.peers if peer != self.port], k=4)
+
+            # assigns the validator based on who has the most staked coin from assigned_n
+
+            print("[Setting validator]")
+            self.send_validator_header(assigned_n)
+            time.sleep(1)
+            validator_peer = self.globa_validator
+            # print("validator peer after global ", validator_peer)
+            print(validator_peer)
+            if validator_peer != 0:
+                print("[Validator set]")
+                time.sleep(1)
+                new_task = Task(self.global_task_id, description, self.port, assigned_n, validator_peer, tier)
+                self.global_task_id += 1
+                new_task.assigned_nodes = assigned_n
+                # Send the task information to the assigned nodes
+                for peer in assigned_n:
+                    try:
+                        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        s.connect(('127.0.0.1', peer))
+                        task_str = f"{new_task.id}:{new_task.description}:{new_task.author}:{','.join(str(node) for node in new_task.assigned_nodes)}:{new_task.complete}:{new_task.validator}:{new_task.difficulty}"
+                        s.send(f'T:{task_str}'.encode('utf-8'))
+                        s.send(f'i:{self.global_task_id}'.encode('utf-8'))
+                        s.close()
+                    except Exception as e:
+                        pass
+                self.notify_assigned_nodes(assigned_n)
+                self.my_tasks.append(new_task)
+                self.clear_screen()
+                time.sleep(11)
+            else:
+                print("Failed getting validator... try again.")
+        else:
+            print(f"Insufficient balance to purchase {tier['difficulty']}.")
+            return
+
+    def send_task_done_from_gui(self):
+        author = self.given_tasks[-1].get_author()
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect(('127.0.0.1', int(author)))
+        s.send(f'c:{""}'.encode('utf-8'))
+        s.close()
+        print("\n-- Task completed!")
+        self.balance = self.balance + self.stake
+        self.stake = 0
+
+    def continue_cli_task(self, description, tier):
+        if self.balance >= int(tier):
+            self.balance -= int(tier)
+            print("purchased successfully!")
+            assigned_n = random.sample([peer for peer in self.peers if peer != self.port], k=4)
+
+            # assigns the validator based on who has the most staked coin from assigned_n
+
+            print("[Setting validator]")
+            self.send_validator_header(assigned_n)
+            time.sleep(1)
+            validator_peer = self.globa_validator
+            # print("validator peer after global ", validator_peer)
+            print(validator_peer)
+            if validator_peer != 0:
+                print("[Validator set]")
+                time.sleep(1)
+                new_task = Task(self.global_task_id, description, self.port, assigned_n, validator_peer, tier)
+                self.global_task_id += 1
+                new_task.assigned_nodes = assigned_n
+                # Send the task information to the assigned nodes
+                for peer in assigned_n:
+                    try:
+                        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        s.connect(('127.0.0.1', peer))
+                        task_str = f"{new_task.id}:{new_task.description}:{new_task.author}:{','.join(str(node) for node in new_task.assigned_nodes)}:{new_task.complete}:{new_task.validator}:{new_task.difficulty}"
+                        s.send(f'T:{task_str}'.encode('utf-8'))
+                        s.send(f'i:{self.global_task_id}'.encode('utf-8'))
+                        s.close()
+                    except Exception as e:
+                        pass
+                self.notify_assigned_nodes(assigned_n)
+                self.my_tasks.append(new_task)
+                self.clear_screen()
+                time.sleep(11)
+            else:
+                print("Failed getting validator... try again.")
+        else:
+            print(f"Insufficient balance to purchase {tier['difficulty']}.")
+            return
 
     # def get_validator_peer(self, validator):
     #     return int(validator)
@@ -283,6 +330,8 @@ class Node():
         task = self.my_tasks[-1]
         assigned_n = task.assigned_nodes
         tier = task.difficulty
+        print(tier)
+        print(type(tier))
         # validator_peer = task.validator
         for peer in assigned_n:
             if peer != task.author:
@@ -290,17 +339,18 @@ class Node():
                     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     s.connect(('127.0.0.1', peer))
 
-                    if tier["difficulty"] == "Tier A":
+                    # if tier["difficulty"] == "Tier A":
+                    if tier == 5:
                         s.send(f'R:{1}'.encode('utf-8'))
                         print("giving reward")
                         s.close()
 
-                    if tier["difficulty"] == "Tier B":
+                    if tier == 10:
                         s.send(f'R:{2}'.encode('utf-8'))
                         print("giving reward")
                         s.close()
 
-                    if tier["difficulty"] == "Tier C":
+                    if tier == 15:
                         s.send(f'R:{3}'.encode('utf-8'))
                         print("giving reward")
                         s.close()
@@ -312,17 +362,17 @@ class Node():
             print("validator in reward ", self.globa_validator)
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect(('127.0.0.1', self.globa_validator))
-            if tier["difficulty"] == "Tier A":
+            if tier == 5:
                 print("giving reward")
                 s.send(f'R:{1}'.encode('utf-8'))
                 s.close()
 
-            if tier["difficulty"] == "Tier B":
+            if tier == 10:
                 s.send(f'R:{2}'.encode('utf-8'))
                 print("giving reward")
                 s.close()
 
-            if tier["difficulty"] == "Tier C":
+            if tier == 15:
                 s.send(f'R:{3}'.encode('utf-8'))
                 print("giving reward")
                 s.close()
@@ -333,14 +383,12 @@ class Node():
         print("\nTask completed!")
 
     def notify_assigned_nodes(self, assigned_n):
-        message = "-- You have been assigned task.]\n -- Starting work shortly."
         time.sleep(1)
         for peer in assigned_n:
             try:
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.connect(('127.0.0.1', peer))
                 s.send(f'w:{""}'.encode('utf-8'))
-                s.send(f'M:{message}'.encode('utf-8'))
                 s.close()
             except Exception as e:
                 pass
@@ -355,7 +403,6 @@ class Node():
             _ = os.system('clear')
 
     def working_on_task(self):
-
         # self.list_given_tasks()
         self.clear_screen()
         print("Working on task...", end='', flush=True)
@@ -394,7 +441,7 @@ class Node():
 
     def get_balance(self):
         print(f"Wallet [{self.wallet}]\nBalance: {self.balance}")
-        return self.wallet, self.balance
+        return self.balance
 
     def print_stake(self):
         print(f"\nYour stake is - {self.stake}")
@@ -423,28 +470,24 @@ class Node():
         validator = self.globa_validator
         task = self.given_tasks[-1]
         peers = self.given_tasks[-1].assigned_nodes
-        tier = task.difficulty
+        tier = int(task.difficulty)
         transactions = []
         previous_hash = self.blockchain.get_latest_block().hash
-        if tier == " 'Tier A', 'price'":
+        if tier == 1:
             transactions.append(f"1 token from {author} to {validator}")
             for peer in peers:
                 transactions.append(f"1 token from {author} to {peer}")
 
-        if tier == " 'Tier B', 'price'":
+        if tier == 2:
             transactions.append(f"2 token from {author} to {validator}")
             for peer in peers:
                 transactions.append(f"2 token from {author} to {peer}")
 
-        if tier == " 'Tier C', 'price'":
+        if tier == 3:
             transactions.append(f"3 token from {author} to {validator}")
             for peer in peers:
                 transactions.append(f"3 token from {author} to {peer}")
 
-        # def calculate_hash(transactions):
-        #     # Calculate the hash of concatenated transactions
-        #     concatenated = ''.join(transactions).encode()
-        #     return hashlib.sha256(concatenated).hexdigest()
 
         def calculate_hash(transactions):
             # Convert each transaction to a string and calculate the hash of the concatenated transactions
@@ -452,6 +495,7 @@ class Node():
             return hashlib.sha256(concatenated).hexdigest()
 
         transaction_hashes = []
+        print(transactions)
         for transaction in transactions:
             transaction_hashes.append(calculate_hash([transaction]))
 
@@ -524,8 +568,11 @@ class Node():
 
     def view_blockchain(self):
         # print(self.blockchain.get_latest_block())
+        blocks = []
         for block in range(self.blockchain.get_blockchain_height()):
             print(self.blockchain.get_block(block))
+            blocks.append(self.blockchain.get_block_string(block))
+        return blocks
 
 
 

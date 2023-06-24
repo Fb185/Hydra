@@ -39,41 +39,82 @@ class karl( Frame ):
 
         self.show_peers_button = Button(self, text = "Show peers", width = 25, command = self.show_peers)
         self.show_peers_button.grid(row = 7, column = 0, sticky = W+E+N+S)
+
+        self.exit = Button(self, text = "Exit", width = 25, command = self.exit)
+        self.exit.grid(row = 8, column = 0, sticky = W+E+N+S)
+
+        # self.make_task_button = Button(self, text = "Make task", width = 25, command = self.make_task)
+        # self.make_task_button.grid(row = 9, column = 0, sticky = W+E+N+S)
+
+
+
         #make an text box to show user text beside the buttons and make it span the height of the window
         # the text box shouldnt be editable
+        #add a section on top of the text box with a title "logs"
         self.text_box = Text(self, height = 20, width = 50)
-        self.text_box.grid(row = 0, column = 1, rowspan = 8, sticky = W+E+N+S)
+        self.text_box.grid(row = 0, column = 1, rowspan = 9, sticky = W+E+N+S)
 
 
         #make an input box that is beneath the text box and has the same width
         #add placeholder text to the input box
         self.input_box = Entry(self)
-        self.input_box.grid(row = 7, column = 1, sticky = W+E+N+S)
-        self.input_box.insert(0, "Enter message here")
+        self.input_box.grid(row = 8, column = 1, rowspan = 1, sticky = W+E+N+S)
+        self.input_box.insert(0, "Enter stake here")
 
+        # make a button labled make task to the right of the input box as well as another
+        # input box beneath the make task button and a multi choice check box beneath that
 
+        self.make_task_button = Button(self, text = "Make task", width = 25, command = self.make_task)
+        self.make_task_button.grid(row = 0, column = 2, sticky = W+E+N+S)
+
+        self.input_box2 = Entry(self)
+        self.input_box2.grid(row = 1, column = 2, rowspan = 1, sticky = W+E+N+S)
+        self.input_box2.insert(0, "Enter task here")
+
+        #make a multiple choice section with 3 check boxes where the user can only choose one
+        #use radio buttons
+        self.var = IntVar()
+        self.var.set(0)
+        self.radio_button1 = Radiobutton(self, text = "Tier A = 5$", variable = self.var, value = 5)
+        self.radio_button1.grid(row = 2, column = 2, sticky = W+E+N+S)
+        self.radio_button2 = Radiobutton(self, text = "Tier B = 10$", variable = self.var, value = 10)
+        self.radio_button2.grid(row = 3, column = 2, sticky = W+E+N+S)
+        self.radio_button3 = Radiobutton(self, text = "Tier C = 15$", variable = self.var, value = 15)
+        self.radio_button3.grid(row = 4, column = 2, sticky = W+E+N+S)
+
+        #add an image beneath the radio buttons
+        # make the image not touch the edged of the radio buttons
+        #make the image not touch the edges of the window
+        #make the image not touch the edges of the input box
+        #make the image not touch the edges of the text box
+        #shrink the png to fit the window
+
+        self.image = PhotoImage(file = "logo.png")
+        self.image_label = Label(self, image = self.image)
+        self.image_label.grid(row = 6, column = 2, rowspan = 2, sticky = W+E+N+S)
 
     def listg(self):
         tasks = self.node.list_given_tasks()
         #send the output of the line above to the text box
-        self.text_box.insert(END, f"\nList of given tasks: {tasks}")
+        self.text_box.insert(END, f"\nList of given tasks: {tasks}\n")
 
     #define the listm function that is the same as the listg function but for the list of my tasks
     def listm(self):
-        self.node.list_my_tasks()
+        tasks = self.node.list_my_tasks()
         #send the output of the line above to the text box
-        self.text_box.insert(END, "\nList of my tasks")
+        self.text_box.insert(END, f"\nList of my tasks: {tasks}\n")
 
     #define the stake function that is the same as the listg function but for my stake
     def stake(self):
         stake = self.node.get_stake()
         self.node.get_stake()
         #send the output of the line above to the text box
-        self.text_box.insert(END, f"\nMy stake is {stake}")
+        self.text_box.insert(END, f"\nMy stake is {stake}\n")
 
     def get_balance(self):
+        print("get balance")
         balance = self.node.get_balance()
-        self.text_box.insert(END, f"\nMy balance is {balance}")
+        self.text_box.insert(END, f"\nMy balance is {balance}\n")
         #send the output of the line above to the text box
         # self.text_box.insert(END, "\nMy balance")
 
@@ -89,9 +130,9 @@ class karl( Frame ):
         self.after(3000, self.enable_send_button)
 
     def show(self):
-        self.node.view_blockchain()
+        blocks = self.node.view_blockchain()
         #send the output of the line above to the text box
-        self.text_box.insert(END, "\nShow")
+        self.text_box.insert(END, f"\nShow: {blocks}")
 
     def show_peers(self):
         peers = self.node.show_peers()
@@ -116,24 +157,44 @@ class karl( Frame ):
         self.text_box.insert(END, msg)
 
 
+    def exit(self):
+        #this should kill the tkinter window and exit the program
+        self.master.destroy()
+
+    def make_task(self):
+            if len(self.node.peers) < 4:
+                print("\nNot enough connected nodes to create a task.")
+                pass  # Skip task creation if there are not enough connected nodes
+            else:
+                description = self.input_box2.get()
+                # selection should be the value of the radio button that is selected
+                selection = self.var.get()
+                print(selection)
+                self.node.make_task(description, selection)
+                message = f"\nTask created with description: {description} and stake: {selection}"
+                # self.add_message(msg)
 
 
 
     def working_on_task(self):
         # write on text box for 3 seconds that it is working on a task and disable the send button
+        #clear the text box
+        # self.text_box.delete(1.0, END)
         self.text_box.insert(END, "\nWorking on task...")
         timer_duration = random.randint(1, 10)
         # write a for loop that adds dots to the text box every second for 3 seconds
         for i in range(timer_duration):
             self.text_box.insert(END, ".")
             self.after(1000)
-        self.send_button["state"] = DISABLED
-        self.after(3000, self.task_done)
+        self.make_task_button["state"] = DISABLED
+        self.after(11000, self.task_done)
+
+        self.node.send_task_done_from_gui()
 
     def task_done(self):
         # write on text box that task is done and enable the send button
         self.text_box.insert(END, "\nTask done!")
-        self.send_button["state"] = NORMAL
+        self.make_task_button["state"] = NORMAL
 
 
     def disable_all_inputs(self):

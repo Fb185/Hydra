@@ -39,7 +39,25 @@ def main(interfaceString):
                     continue  # Skip task creation if there are not enough connected nodes
                 else:
                     description = input("Enter a description ")
-                    node.make_task(description)
+                    print("""
+                    Welcome to the Menu:
+                    Please select an option:
+                    1. Tier A - $5
+                    2. Tier B - $10
+                    3. Tier C - $15
+                    """)
+
+                    selected_option = input("Option: ")
+                    if selected_option == '1':
+                        selected_option = 5
+                    elif selected_option == '2':
+                        selected_option = 10
+                    elif selected_option == '3':
+                        selected_option = 15
+                    else:
+                        print("Invalid Option")
+                        break
+                    node.make_task(description, selected_option)
 
             elif command == "listg":
                 node.list_given_tasks()
