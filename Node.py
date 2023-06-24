@@ -46,6 +46,7 @@ class Node():
         client_socket.close()
 
     def send_message(self, msg):
+        print(self.peers)
         for peer in self.peers:
             try:
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -193,18 +194,33 @@ class Node():
             s.send(f'n:{validator}'.encode('utf-8'))
             s.close()
 
-    def connect_to_peers(self):
-        for i in range(8000, self.port):
-            print(i)
-            try:
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.settimeout(1/2)  # Add a timeout to the socket
-                s.connect(('127.0.0.1', i))
-                s.send(f'P:{self.port}'.encode('utf-8'))
-                self.peers.append(i)
-                threading.Thread(target=self.handle_peer, args=(s,)).start()
-            except Exception as e:
-                pass
+    def connect_to_peers(self, local = True):
+        if local:
+            print("local")
+            for i in range(8000, self.port):
+                print(i)
+                try:
+                    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    s.settimeout(1/2)  # Add a timeout to the socket
+                    s.connect(('127.0.0.1', i))
+                    s.send(f'P:{self.port}'.encode('utf-8'))
+                    self.peers.append(i)
+                    threading.Thread(target=self.handle_peer, args=(s,)).start()
+                except Exception as e:
+                    pass
+        else:
+            print("unlocal")
+            for i in range(8000, self.port):
+                print(i)
+                try:
+                    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    s.settimeout(1/2)  # Add a timeout to the socket
+                    s.connect(('127.0.0.1', i))
+                    s.send(f'P:{self.port}'.encode('utf-8'))
+                    self.peers.append(i)
+                    threading.Thread(target=self.handle_peer, args=(s,)).start()
+                except Exception as e:
+                    pass
 
 
     #COMPONENTE DAS TASKS
