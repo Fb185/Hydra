@@ -10,9 +10,17 @@ class karl( Frame ):
         tk.Frame.__init__(self)
         self.pack()
         # self.master.title("Karlos")
-        self.node = Node(8100, self)
+        port = 8000
+        while True:
+            try:
+                node = Node(port, self)
+                break
+            except:
+                port += 1
+
+        self.node = node
         self.node.connect_to_peers()
-        self.node.send_message(f"\nNode 13991 has connected to the network")
+        self.node.send_message(f"\nNode {port} has connected to the network")
 
         #things for send message
 
@@ -134,6 +142,9 @@ class karl( Frame ):
         #send the output of the line above to the text box
         self.text_box.insert(END, f"\nShow: {blocks}")
 
+    def add_message(self, message):
+        self.text_box.insert(END, f"\n{str(message)}")
+
     def show_peers(self):
         peers = self.node.show_peers()
         #send the output of the line above to the text box
@@ -153,12 +164,14 @@ class karl( Frame ):
     def enable_send_button(self):
         self.send_button["state"] = NORMAL
 
-    def add_message(self, msg):
-        self.text_box.insert(END, msg)
+    # def add_message(self, msg):
+    #     self.text_box.insert(END, msg)
 
 
     def exit(self):
         #this should kill the tkinter window and exit the program
+        self.node.server_socket.close()
+        self.node.send_remove_peer()
         self.master.destroy()
 
     def make_task(self):

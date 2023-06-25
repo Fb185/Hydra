@@ -11,14 +11,14 @@ class Task():
         self.difficulty = difficulty
 
     def from_string(task_str):
-        task_data = task_str.split(":")
+        task_data = task_str.split(";")
         task_id = int(task_data[0])
         description = task_data[1]
         author = int(task_data[2])
         assigned_nodes = [int(node) if node != "None" else None for node in task_data[3].split(",")]
         complete = task_data[4] == "True"
         validator = task_data[5]
-        difficulty = task_data[7]
+        difficulty = task_data[6]
         task = Task(task_id, description, author, assigned_nodes, validator, difficulty)
         task.complete = complete
         return task
