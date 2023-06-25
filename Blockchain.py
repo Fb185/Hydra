@@ -45,10 +45,10 @@ class Blockchain:
 
 
     def generate_new_block(self, content):
-        # timestamp = date.datetime.now()
+        timestamp = date.datetime.now()
         previous_hash = self.get_latest_block().hash
         index =  int(self.get_latest_block().index) +1
-        new_block = Block(previous_hash, 0, index, content)
+        new_block = Block(previous_hash, 0, index, timestamp, content)
         new_block.calculate_hash()
         print("New block created:\n" + str(new_block))
         return new_block
