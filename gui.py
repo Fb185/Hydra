@@ -1,5 +1,5 @@
 
-# import random, time
+import random, time
 from Node import Node
 import tkinter as tk
 from tkinter import *
