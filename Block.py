@@ -1,7 +1,7 @@
 import hashlib
 
 class Block:
-    def __init__(self, previous_hash, hash,  index, content):
+    def __init__(self, previous_hash, hash, timestamp,  index, content):
         self.previous_hash = previous_hash
         self.index = index
         self.content = content
