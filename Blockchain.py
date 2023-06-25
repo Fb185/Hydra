@@ -58,24 +58,3 @@ class Blockchain:
 
 
 
-
-# Testing
-if __name__ == "__main__":
-    blockchain = Blockchain()
-    # print("blockchain: ", blockchain.get_latest_block())
-
-    # Generate five blocks
-    num_blocks = 5
-    for i in range(num_blocks):
-        # import pdb
-        # pdb.set_trace()
-        data = ["Transaction 1", "Transaction 2", "Transaction 3", "Transaction 4", "Transaction 5", "Transaction 6", "Transaction 7"]
-        random.shuffle(data)
-        new_block = blockchain.generate_new_block(data)
-        blockchain.add_block(new_block)
-        # merkle_tree = new_block.view_merkle_tree()
-        # print("Merkle Tree:", merkle_tree)        # time.sleep(2)
-
-    # Validate the blockchain
-    is_valid = blockchain.validate_blockchain()
-    print("Blockchain is valid:", is_valid)
