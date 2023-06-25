@@ -1,18 +1,20 @@
 import hashlib
 
 class Block:
-    def __init__(self, previous_hash, hash, timestamp, index, content):
+    def __init__(self, previous_hash, hash,  index, content):
         self.previous_hash = previous_hash
         self.index = index
         self.content = content
         self.hash = hash
-        self.timestamp = timestamp
+
+
 
     # @classmethod
     def from_string(block_string):
         print (block_string)
-        previous_hash, hash, timestamp, index, content = block_string.split(':')
-        return Block(previous_hash, hash, timestamp, int(index), content)
+        previous_hash, hash, index, content = block_string.split(':')
+        return Block(previous_hash, hash, int(index), content)
+
 
     def calculate_hash(self):
         sha = hashlib.sha256()
@@ -25,4 +27,4 @@ class Block:
 
 
     def __str__(self):
-        return f"{self.previous_hash}:{self.hash}:{self.timestamp}:{self.index}:{self.content}"
+        return f"{self.previous_hash}:{self.hash}:{self.index}:{self.content}"
