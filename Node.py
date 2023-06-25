@@ -8,7 +8,7 @@ from Block import *
 from Blockchain import *
 import hashlib
 import random
-import datetime
+
 
 
 class Node():
@@ -482,7 +482,6 @@ class Node():
 
 
     def create_block(self):
-        timestamp = datetime.datetime.now()
         author = self.given_tasks[-1].author
         validator = self.globa_validator
         task = self.given_tasks[-1]
@@ -529,7 +528,7 @@ class Node():
 
 
 
-        data = [author, validator, task, peers, transactions, timestamp, previous_hash, merkle_root]
+        data = [author, validator, task, peers, transactions, previous_hash, merkle_root]
         block = self.blockchain.generate_new_block(data)
         self.clear_screen()
 
