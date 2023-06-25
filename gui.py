@@ -1,5 +1,5 @@
 
-import random, time
+# import random, time
 from Node import Node
 import tkinter as tk
 from tkinter import *
@@ -13,6 +13,7 @@ class karl( Frame ):
         port = 8000
         while True:
             try:
+                print(port)
                 node = Node(port, self)
                 break
             except:

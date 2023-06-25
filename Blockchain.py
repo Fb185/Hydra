@@ -9,7 +9,7 @@ class Blockchain:
         # self.ledger = Ledger()
 
     def create_genesis_block(self):
-        return Block(0,"0", "0", "Genesis Block")
+        return Block(0,"0", "0", "timestamp", "Genesis Block")
 
     def get_blockchain_height(self):
         return len(self.chain)
