@@ -1,4 +1,4 @@
-import datetime as date
+import datetime 
 from Block import Block
 import random
 from ledger import Ledger
@@ -10,7 +10,7 @@ class Blockchain:
         # self.ledger = Ledger()
 
     def create_genesis_block(self):
-        return Block(0,"0", "0", "Genesis Block")
+        return Block("0", "0", "0", 0, "Genesis Block")
 
     def get_blockchain_height(self):
         return len(self.chain)
@@ -20,18 +20,17 @@ class Blockchain:
 
     def get_blockchain(self):
         return self.chain
+    
 
     def get_block_string(self, block):
         block =  self.chain[block]
-        block_string = (f"previous hash: {block.previous_hash}\nhash: {block.hash}\nindex: {block.index}\ncontent: {block.content}")
-        return block_string
+        block_string = (f"Previous hash: {block.previous_hash}\nHash: {block.hash}\nTimestamp: {block.timestamp}\nIndex: {block.index}\nContent: {block.content}\n\n")
+        block_string
 
     def get_block(self, block):
         block =  self.chain[block]
-        print(f"previous hash: {block.previous_hash}\nhash: {block.hash}\nindex: {block.index}\ncontent: {block.content}\n\n")
+        print(f"Previous hash: {block.previous_hash}\nHash: {block.hash}\nTimestamp: {block.timestamp}\nIndex: {block.index}\nContent: {block.content}\n\n")
         return block
-
-
 
     def add_block(self, new_block):
         self.chain.append(new_block)
@@ -44,17 +43,12 @@ class Blockchain:
                 return False
         return True
 
-
-
-
     def generate_new_block(self, content):
-        # timestamp = date.datetime.now()
-        previous_hash = self.get_latest_block().hash
-        index =  int(self.get_latest_block().index) +1
-        new_block = Block(previous_hash, 0, index, content)
-        new_block.calculate_hash()
-        print("New block created:\n" + str(new_block))
-        return new_block
-
-
+            previous_hash = self.get_latest_block().hash
+            index = int(self.get_latest_block().index) + 1
+            timestamp = datetime.datetime.now()
+            new_block = Block(previous_hash, 0, timestamp, index, content)
+            new_block.calculate_hash()
+            print("New block created:\n" + str(new_block))
+            return new_block
 
