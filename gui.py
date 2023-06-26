@@ -10,9 +10,18 @@ class karl( Frame ):
         tk.Frame.__init__(self)
         self.pack()
         # self.master.title("Karlos")
-        self.node = Node(8100, self)
+        port = 8000
+        while True:
+            try:
+                print(port)
+                node = Node(port, self)
+                break
+            except:
+                port += 1
+
+        self.node = node
         self.node.connect_to_peers()
-        self.node.send_message(f"\nNode 13991 has connected to the network")
+        self.node.send_message(f"\nNode {port} has connected to the network")
 
         #things for send message
 
@@ -51,8 +60,17 @@ class karl( Frame ):
         #make an text box to show user text beside the buttons and make it span the height of the window
         # the text box shouldnt be editable
         #add a section on top of the text box with a title "logs"
-        self.text_box = Text(self, height = 20, width = 50)
-        self.text_box.grid(row = 0, column = 1, rowspan = 9, sticky = W+E+N+S)
+        # make the text box scrollable
+
+        # self.text_box = Text(self, height = 20, width = 50)
+        # self.text_box.grid(row = 0, column = 1, rowspan = 8, sticky = W+E+N+S)
+        # self.text_box.insert(END, "Logs\n")
+        # self.text_box.config(state = DISABLED)
+
+        #make a text box that is scrollable
+        from tkinter import scrolledtext
+        self.text_box = scrolledtext.ScrolledText(self, wrap=tk.WORD, width = 50, height = 20)
+        self.text_box.grid(row = 0, column = 1, rowspan = 8, sticky = W+E+N+S)
 
 
         #make an input box that is beneath the text box and has the same width
@@ -134,6 +152,9 @@ class karl( Frame ):
         #send the output of the line above to the text box
         self.text_box.insert(END, f"\nShow: {blocks}")
 
+    def add_message(self, message):
+        self.text_box.insert(END, f"\n{str(message)}")
+
     def show_peers(self):
         peers = self.node.show_peers()
         #send the output of the line above to the text box
@@ -143,7 +164,7 @@ class karl( Frame ):
     #define send message funcition that uses the text in input box
     def send_message(self):
         msg = self.input_box.get()
-        self.node.send_message(f"\nNode 13991: {msg}")
+        self.node.send_message(f"\nmsg: {msg}")
         self.input_box.delete(0, END)
         #write a message sent to text box and disable send button for 3 seconds
         self.text_box.insert(END, "\nMessage sent!")
@@ -153,12 +174,41 @@ class karl( Frame ):
     def enable_send_button(self):
         self.send_button["state"] = NORMAL
 
-    def add_message(self, msg):
-        self.text_box.insert(END, msg)
+
+    #method that disables all the existing buttons for 10 seconds
+    def disable_buttons(self):
+        self.exit.grid(row = 8, column = 0, sticky = W+E+N+S)
+        self.send_button["state"] = DISABLED
+        self.listg_button["state"] = DISABLED
+        self.listm_button["state"] = DISABLED
+        self.balance_button["state"] = DISABLED
+        self.stake_button["state"] = DISABLED
+        self.add_stake_button["state"] = DISABLED
+        self.show_button["state"] = DISABLED
+        self.show_peers_button["state"] = DISABLED
+        # self.exit["state"] = DISABLED
+        self.after(10000, self.enable_buttons)
+
+
+    def enable_buttons(self):
+        self.send_button["state"] = NORMAL
+        self.listg_button["state"] = NORMAL
+        self.listm_button["state"] = NORMAL
+        self.balance_button["state"] = NORMAL
+        self.stake_button["state"] = NORMAL
+        self.add_stake_button["state"] = NORMAL
+        self.show_button["state"] = NORMAL
+        self.show_peers_button["state"] = NORMAL
+        # self.exit["state"] = NORMAL
+
+
+
 
 
     def exit(self):
         #this should kill the tkinter window and exit the program
+        self.node.server_socket.close()
+        self.node.send_remove_peer()
         self.master.destroy()
 
     def make_task(self):
@@ -172,6 +222,7 @@ class karl( Frame ):
                 print(selection)
                 self.node.make_task(description, selection)
                 message = f"\nTask created with description: {description} and stake: {selection}"
+                self.disable_buttons()
                 # self.add_message(msg)
 
 

@@ -66,6 +66,7 @@ class Node():
         s.close()
 
     def show_peers(self):
+        print(self.peers)
         peers = []
         for _ in self.peers:
             peers.append(_)
@@ -154,7 +155,11 @@ class Node():
                         successful_validations = 0
                         self.blockchain.add_block(Block.from_string(data))
                         self.clear_screen()
-                        print("Block successfully added to the Blockchain")
+                        msg = f'Block successfully added to the Blockchain'
+                        if self.gui:
+                            self.gui.add_message(msg)
+                        else:
+                            print(msg)
 
                 elif header == 'r:':  # asserts validator
                     print("got r")
@@ -179,6 +184,9 @@ class Node():
                     print("got n")
                     self.globa_validator = int(data)
                     print("new validator: ", self.globa_validator)
+
+                elif header == "e:":
+                    self.peers.remove(int(data))
 
 
             except socket.timeout:
@@ -205,6 +213,9 @@ class Node():
                     s.connect(('127.0.0.1', i))
                     s.send(f'P:{self.port}'.encode('utf-8'))
                     self.peers.append(i)
+                    if self.gui:
+                        msg = f"peer {i} connected"
+                        self.gui.send_message(msg)
                     threading.Thread(target=self.handle_peer, args=(s,)).start()
                 except Exception as e:
                     pass
@@ -237,7 +248,9 @@ class Node():
         if self.balance >= selection:
             self.balance -= selection
             # print(f"{tier['difficulty']} purchased successfully!")
-            self.gui.add_message("purchased successfully!")
+            if self.gui:
+                msg = "purchased successfully!"
+                self.gui.add_message(msg)
 
             assigned_n = random.sample([peer for peer in self.peers if peer != self.port], k=4)
 
@@ -260,9 +273,10 @@ class Node():
                     try:
                         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                         s.connect(('127.0.0.1', peer))
-                        task_str = f"{new_task.id}:{new_task.description}:{new_task.author}:{','.join(str(node) for node in new_task.assigned_nodes)}:{new_task.complete}:{new_task.validator}:{new_task.difficulty}"
+                        task_str = f"{new_task.id};{new_task.description};{new_task.author};{','.join(str(node) for node in new_task.assigned_nodes)};{new_task.complete};{new_task.validator};{new_task.difficulty}"
+                        # task_str = f"{new_task.id}:{new_task.description}:{new_task.author}:{','.join(str(node) for node in new_task.assigned_nodes)}:{new_task.complete}:{new_task.validator}:{new_task.difficulty}"
                         s.send(f'T:{task_str}'.encode('utf-8'))
-                        s.send(f'i:{self.global_task_id}'.encode('utf-8'))
+                        # s.send(f'i:{self.global_task_id}'.encode('utf-8'))
                         s.close()
                     except Exception as e:
                         pass
@@ -311,9 +325,9 @@ class Node():
                     try:
                         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                         s.connect(('127.0.0.1', peer))
-                        task_str = f"{new_task.id}:{new_task.description}:{new_task.author}:{','.join(str(node) for node in new_task.assigned_nodes)}:{new_task.complete}:{new_task.validator}:{new_task.difficulty}"
+                        task_str = f"{new_task.id};{new_task.description};{new_task.author};{','.join(str(node) for node in new_task.assigned_nodes)};{new_task.complete};{new_task.validator};{new_task.difficulty}"
                         s.send(f'T:{task_str}'.encode('utf-8'))
-                        s.send(f'i:{self.global_task_id}'.encode('utf-8'))
+                        # s.send(f'i:{self.global_task_id}'.encode('utf-8'))
                         s.close()
                     except Exception as e:
                         pass
@@ -475,9 +489,21 @@ class Node():
 
     def exit(self):
         print(f"\nNode {self.port} exited")
+        # self.leave()
         self.closed = True
         self.server_socket.close()
         sys.exit()
+
+    def leave(self):
+        #remove my port number from self.peers
+        self.peers.remove(self.port)
+
+    def send_remove_peer(self):
+        for peers in self.peers:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect(('127.0.0.1', peers))
+            s.send(f'e:{self.port}'.encode('utf-8'))
+            s.close()
 
 
 
@@ -487,33 +513,31 @@ class Node():
         task = self.given_tasks[-1]
         peers = self.given_tasks[-1].assigned_nodes
         tier = int(task.difficulty)
+        print("tier", tier)
         transactions = []
         previous_hash = self.blockchain.get_latest_block().hash
-        if tier == 1:
+        if tier == 5:
             transactions.append(f"1 token from {author} to {validator}")
             for peer in peers:
                 transactions.append(f"1 token from {author} to {peer}")
 
-        if tier == 2:
+        if tier == 10:
             transactions.append(f"2 token from {author} to {validator}")
             for peer in peers:
                 transactions.append(f"2 token from {author} to {peer}")
 
-        if tier == 3:
+        if tier == 15:
             transactions.append(f"3 token from {author} to {validator}")
             for peer in peers:
                 transactions.append(f"3 token from {author} to {peer}")
 
+        def calculate_hash(transaction):
+            # Convert transaction to a string and calculate its hash
+            transaction_str = str(transaction).encode()
+            return hashlib.sha256(transaction_str).hexdigest()
 
-        def calculate_hash(transactions):
-            # Convert each transaction to a string and calculate the hash of the concatenated transactions
-            concatenated = ''.join(str(t) for t in transactions).encode()
-            return hashlib.sha256(concatenated).hexdigest()
-
-        transaction_hashes = []
-        print(transactions)
-        for transaction in transactions:
-            transaction_hashes.append(calculate_hash([transaction]))
+        print("transactions", transactions)
+        transaction_hashes = [calculate_hash(t) for t in transactions]
 
         while len(transaction_hashes) > 1:
             new_hashes = []
@@ -523,8 +547,28 @@ class Node():
                 new_hash = calculate_hash(concatenated)
                 new_hashes.append(new_hash)
             transaction_hashes = new_hashes
-
         merkle_root = transaction_hashes[0]
+
+        # def calculate_hash(transactions):
+        #     # Convert each transaction to a string and calculate the hash of the concatenated transactions
+        #     concatenated = ''.join(str(t) for t in transactions).encode()
+        #     return hashlib.sha256(concatenated).hexdigest()
+
+        # #merkle tree
+        # transaction_hashes = []
+        # print(transactions)
+        # for transaction in transactions:
+        #     transaction_hashes.append(calculate_hash([transaction]))
+
+        # while len(transaction_hashes) > 1:
+        #     new_hashes = []
+        #     for i in range(0, len(transaction_hashes), 2):
+        #         pair = transaction_hashes[i:i+2]
+        #         concatenated = ''.join(pair).encode()
+        #         new_hash = calculate_hash(concatenated)
+        #         new_hashes.append(new_hash)
+        #     transaction_hashes = new_hashes
+
 
 
 
@@ -556,8 +600,9 @@ class Node():
         if str(self.blockchain.get_latest_block().hash) != str(block.previous_hash):
             print("Validation failed")
         else:
+            # print("myport", self.port, "validator", self.globa_validator)
             try:
-                task = self.given_tasks[-1]
+                # task = self.given_tasks[-1]
                 # validator_peer = task.validator
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.connect(('127.0.0.1', int(self.globa_validator)))
@@ -567,9 +612,12 @@ class Node():
                 self.blockchain.add_block(block)
                 self.clear_screen()
                 print("Validated successfully")
+                # if self.gui:
+                #     msg = "Validated successfully"
+                #     self.gui.add_message(msg)
                 # return None
             except:
-                task = self.my_tasks[-1]
+                # task = self.my_tasks[-1]
                 # validator_peer = task.validator
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.connect(('127.0.0.1', int(self.globa_validator)))
