@@ -1,11 +1,10 @@
 import hashlib
 
 class Block:
-    def __init__(self, previous_hash, hash,  index, timestamp, content):
+    def __init__(self, previous_hash, hash,  index, content):
         self.previous_hash = previous_hash
         self.index = index
         self.content = content
-        self.timestamp = timestamp
         self.hash = hash
 
 
@@ -13,8 +12,8 @@ class Block:
     # @classmethod
     def from_string(block_string):
         print (block_string)
-        previous_hash, hash, index, timestamp, content = block_string.split(';')
-        return Block(previous_hash, hash, int(index), timestamp, content)
+        previous_hash, hash, index, content = block_string.split(':')
+        return Block(previous_hash, hash, int(index), content)
 
 
     def calculate_hash(self):
@@ -28,4 +27,4 @@ class Block:
 
 
     def __str__(self):
-        return f"{self.previous_hash};{self.hash};{self.index};{self.timestamp};{self.content}"
+        return f"{self.previous_hash}:{self.hash}:{self.index}:{self.content}"

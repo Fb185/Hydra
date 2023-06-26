@@ -18,7 +18,6 @@ def main(interfaceString):
 
         print(f"Node started on port {port}")
         node.connect_to_peers()
-        msg = f"Node {port} has connected to the network"
         node.send_message(f"\nNode {port} has connected to the network")
 
 
@@ -88,13 +87,9 @@ def main(interfaceString):
 
             elif command == "e":
                 node.send_message(f"\nNode {port} has disconnected from the network.")
-                node.send_remove_peer()
                 node.closed = True  # Call the close method to perform cleanup tasks
-                # print(f"\nNode {port} disconnected.")
+                print(f"\nNode {port} disconnected.")
                 sys.exit()
-
-            elif command == "peers":
-                node.show_peers()
 
 
 if __name__ == "__main__":
