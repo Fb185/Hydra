@@ -36,6 +36,7 @@ def main(interfaceString):
             elif command == "make":
 
                 if len(node.peers) < 4:
+
                     print("\nNot enough connected nodes to create a task.")
                     continue  # Skip task creation if there are not enough connected nodes
                 else:
@@ -76,9 +77,9 @@ def main(interfaceString):
                 stake = input("how much do you want to stake: ")
                 node.add_stake(stake)
 
-            elif command == "validate":
-                block = input("Enter what block you want to see: ")
-                blockchain.get_block(block)
+            # elif command == "validate":
+            #     block = input("Enter what block you want to see: ")
+            #     blockchain.get_block(block)
 
             elif command =="show":
                 node.view_blockchain()

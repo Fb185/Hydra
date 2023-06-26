@@ -22,7 +22,7 @@ class Blockchain:
 
     def get_block_string(self, block):
         block =  self.chain[block]
-        block_string = (f"previous hash; {block.previous_hash}\nhash; {block.hash}\nindex; {block.index}\ncontent; {block.content}")
+        block_string = (f"previous hash; {block.previous_hash}hash; {block.hash}index; {block.index}content; {block.content}")
         return block_string
 
     def get_block(self, block):

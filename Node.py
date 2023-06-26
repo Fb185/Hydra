@@ -20,14 +20,14 @@ class Node():
         self.given_tasks = []
         self.my_tasks = []
         self.global_task_id = 0
-        self.balance = 100
+        self.balance = 10
         self.stake = 0
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.bind(('127.0.0.1', self.port))
         # print(self.server_socket)
         self.blockchain = Blockchain()
         self.wallet = hashlib.sha256(str(self.port).encode()).hexdigest()
-        self.globa_validator = 0
+        self.global_validator = 0
         threading.Thread(target=self.listen).start()
 
 
@@ -176,14 +176,14 @@ class Node():
                             print(current_peer)
                             # current_stake = peer[0]
                             # print("current peer: ",current_peer)
-                    self.globa_validator = int(current_peer)
-                    self.send_new_validator(self.globa_validator)
-                    print("task validator: ", self.globa_validator)
+                    self.global_validator = int(current_peer)
+                    self.send_new_validator(self.global_validator)
+                    print("task validator: ", self.global_validator)
 
                 elif header == "n:":
                     print("got n")
-                    self.globa_validator = int(data)
-                    print("new validator: ", self.globa_validator)
+                    self.global_validator = int(data)
+                    print("new validator: ", self.global_validator)
 
                 elif header == "e:":
                     self.peers.remove(int(data))
@@ -238,19 +238,20 @@ class Node():
 
     def make_task(self, description, selection):
         if self.gui:
-            self.continue_gui_task(description, selection)
+            if self.balance >= selection:
+                self.balance -= selection
+                # self.gui.send_purchase_msg()
+                self.continue_gui_task(description, selection)
 
         else:
             self.continue_cli_task(description, selection)
 
     def continue_gui_task(self, description, selection):
         tier = selection
-        if self.balance >= selection:
-            self.balance -= selection
+        # if self.balance >= selection:
+        #     self.balance -= selection
             # print(f"{tier['difficulty']} purchased successfully!")
-            if self.gui:
-                msg = "purchased successfully!"
-                self.gui.add_message(msg)
+        if True:
 
             assigned_n = random.sample([peer for peer in self.peers if peer != self.port], k=4)
 
@@ -259,7 +260,7 @@ class Node():
             print("[Setting validator]")
             self.send_validator_header(assigned_n)
             time.sleep(1)
-            validator_peer = self.globa_validator
+            validator_peer = self.global_validator
             # print("validator peer after global ", validator_peer)
             print(validator_peer)
             if validator_peer != 0:
@@ -285,9 +286,14 @@ class Node():
                 self.clear_screen()
                 time.sleep(11)
             else:
-                print("Failed getting validator... try again.")
+
+                msg = "Failed to get validator..."
+                self.gui.add_message(msg)
+                # print("Failed getting validator... try again.")
         else:
-            print(f"Insufficient balance to purchase {tier['difficulty']}.")
+            msg = "Insuficient balance to purchase task."
+            self.gui.add_message(msg)
+            # print(f"Insufficient balance to purchase {tier['difficulty']}.")
             return
 
     def send_task_done_from_gui(self):
@@ -311,7 +317,7 @@ class Node():
             print("[Setting validator]")
             self.send_validator_header(assigned_n)
             time.sleep(1)
-            validator_peer = self.globa_validator
+            validator_peer = self.global_validator
             # print("validator peer after global ", validator_peer)
             print(validator_peer)
             if validator_peer != 0:
@@ -353,7 +359,7 @@ class Node():
             s.connect(('127.0.0.1', peer))
             s.send(f'v:{self.port}'.encode('utf-8'))
             s.close()
-        # print("validator in decision ", self.globa_validator)
+        # print("validator in decision ", self.global_validator)
 
 
     def reward(self):
@@ -389,9 +395,9 @@ class Node():
                     print("something went wrong with rewards\n", e)
 
         try:
-            print("validator in reward ", self.globa_validator)
+            print("validator in reward ", self.global_validator)
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.connect(('127.0.0.1', self.globa_validator))
+            s.connect(('127.0.0.1', self.global_validator))
             if tier == 5:
                 print("giving reward")
                 s.send(f'R:{1}'.encode('utf-8'))
@@ -509,7 +515,7 @@ class Node():
 
     def create_block(self):
         author = self.given_tasks[-1].author
-        validator = self.globa_validator
+        validator = self.global_validator
         task = self.given_tasks[-1]
         peers = self.given_tasks[-1].assigned_nodes
         tier = int(task.difficulty)
@@ -585,7 +591,7 @@ class Node():
 
     def got_reward(self):
         # task = self.given_tasks[-1]
-        validator_peer = self.globa_validator
+        validator_peer = self.global_validator
         if self.port != validator_peer:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect(('127.0.0.1', int(validator_peer)))
@@ -600,12 +606,12 @@ class Node():
         if str(self.blockchain.get_latest_block().hash) != str(block.previous_hash):
             print("Validation failed")
         else:
-            # print("myport", self.port, "validator", self.globa_validator)
+            # print("myport", self.port, "validator", self.global_validator)
             try:
                 # task = self.given_tasks[-1]
                 # validator_peer = task.validator
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.connect(('127.0.0.1', int(self.globa_validator)))
+                s.connect(('127.0.0.1', int(self.global_validator)))
                 s.send(f'o:{block}'.encode('utf-8'))
                 s.close()
                 self.blockchain.validate_blockchain()
@@ -620,7 +626,7 @@ class Node():
                 # task = self.my_tasks[-1]
                 # validator_peer = task.validator
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.connect(('127.0.0.1', int(self.globa_validator)))
+                s.connect(('127.0.0.1', int(self.global_validator)))
                 s.send(f'o:{block}'.encode('utf-8'))
                 s.close()
                 self.blockchain.validate_blockchain()
