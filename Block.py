@@ -21,6 +21,7 @@ class Block:
         sha = hashlib.sha256()
         sha.update(str(self.previous_hash).encode('utf-8') +
                    str(self.index).encode('utf-8') +
+                   str(self.timestamp).encode('utf-8') +
                    str(self.content).encode('utf-8'))
         self.hash = sha.hexdigest()
         # return sha.hexdigest()
