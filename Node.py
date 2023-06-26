@@ -20,7 +20,7 @@ class Node():
         self.given_tasks = []
         self.my_tasks = []
         self.global_task_id = 0
-        self.balance = 10
+        self.balance = 100
         self.stake = 0
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.bind(('127.0.0.1', self.port))
@@ -490,8 +490,13 @@ class Node():
         print(f"\nBalance of {self.port} updated to {self.balance}")
 
     def add_stake(self, amount):
-        self.stake += int(amount)
-        self.balance = self.balance - self.stake
+        #check that ammount is lest than balance
+        if int(amount) > self.balance:
+            print("Insufficient balance")
+            return
+        else:
+            self.stake += int(amount)
+            self.balance = self.balance - self.stake
 
     def exit(self):
         print(f"\nNode {self.port} exited")

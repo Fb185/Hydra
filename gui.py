@@ -105,9 +105,12 @@ class karl( Frame ):
         self.text_box.insert(END, f"\nMy balance is {balance}\n")
 
     def add_stake(self):
+        #if the stake is abore the balance, then the user can't add stake
         stake = self.input_box.get()
         if stake == "":
             stake = 0
+        if int(stake) > int(self.node.get_balance()):
+            self.text_box.insert(END, "\nNot enough balance to add stake\n")
         self.node.add_stake(int(stake))
         self.input_box.delete(0, END)
         self.text_box.insert(END, "\nStake added!")
